@@ -1,0 +1,9 @@
+CU-Multi Stage 11 GICP value study: COMPLETE
+Selected default online mapping policy: Rank-1 GICP.
+SC-only safe gate is suitable only for place-recognition decisions because it provides no metric relative transform.
+Robot2->Robot3 Rank-1 GICP: precision 99.65%, recall 91.15%, p95 83.80 ms.
+Robot3->Robot2 Rank-1 GICP: precision 99.81%, recall 86.00%, p95 146.06 ms.
+All GICP policies had zero >3 m or >15 deg mapping-hazard events under offline evaluation.
+Selective Top-3 raised recall but increased reverse-direction calls and tail latency; it is not the uniform online default.
+Persistent in-process execution shows prior Stage-9 latency was dominated by repeated backend/setup overhead, not GICP registration alone.
+No pose graph or map merge was run in Stage 11.

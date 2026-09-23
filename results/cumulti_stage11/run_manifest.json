@@ -1,0 +1,23 @@
+{
+  "base_commit": "198b3ac289230cd35cc9b0e3d96173a2aaeb680c",
+  "worktree": "<STAGE11_SOURCE_WORKTREE>",
+  "omp_num_threads": 8,
+  "online_artifact_sha256": {
+    "outputs/cumulti_v1/11_gicp_value_study/frozen_policy.json": "df23e53128c6f5dfe74435fb7e1a90544f69ed632538ca1a08480c04d481d39a",
+    "outputs/cumulti_v1/11_gicp_value_study/robot2_frame_convention_audit.json": "b1dccd366c835018a9b2fa67cd52d2dd0e38d9e8617d77118ccece2a67feb691",
+    "outputs/cumulti_v1/11_gicp_value_study/robot2_to_robot3/candidates_top3_gtfree.csv": "abacd6777b0c6852f3eb82b38ee8e582ea5973875bb8e1cac9c1428ac5e27167",
+    "outputs/cumulti_v1/11_gicp_value_study/robot2_to_robot3/gicp_top3_gtfree.csv": "5045e36b810a0c4236a412b9087cb092371a7f44be81dd373c9dac8f90c68a3e",
+    "outputs/cumulti_v1/11_gicp_value_study/robot3_to_robot2/candidates_top3_gtfree.csv": "1046b92de045831440f136b4f197dca7c3071f276e45b506dec1202911efb01d",
+    "outputs/cumulti_v1/11_gicp_value_study/robot3_to_robot2/gicp_top3_gtfree.csv": "1a071fe07e8f2de80b84f9ce8c621e5e2ef557a052e26f0783005bd7cf727d67"
+  },
+  "commands": [
+    "run_stage11_gicp_value_study.py freeze",
+    "run_stage11_gicp_value_study.py prepare --direction robot2_to_robot3",
+    "run_stage11_gicp_value_study.py prepare --direction robot3_to_robot2",
+    "run_stage11_gicp_value_study.py register --direction <direction> --resume",
+    "run_stage11_gicp_value_study.py evaluate --direction <direction>",
+    "run_stage11_latency.py --direction <direction> --repeats 3 --warmup 20 --measured 200",
+    "run_stage11_gicp_value_study.py combine",
+    "run_stage11_gicp_value_study.py finalize"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "selected_default_online_mapping_policy": "gicp_rank1",
+  "place_recognition_only_option": "sc_score_gate when approximately 80% recall is acceptable",
+  "offline_recovery_option": "gicp_top3 only after Rank-1 rejection",
+  "reason": "Rank-1 GICP is the only mapping-ready policy with predictable one-call cost in both held-out directions. Selective Top-3 improves recall but increases calls and p95 latency on the no-overlap-heavy reverse direction, so it fails the predeclared consistent-efficiency rule.",
+  "all_gicp_policy_mapping_hazard_events_zero": true,
+  "all_measured_p95_under_500ms": true,
+  "reverse_selective_more_calls_than_rank1": true,
+  "reverse_selective_p95_slower_than_rank1": true,
+  "rank1_gicp": {
+    "robot2_to_robot3": {
+      "precision": 0.9965087281795512,
+      "correct_pair_recall": 0.9114963503649636,
+      "no_overlap_rejection_rate": 0.8157894736842105,
+      "p95_latency_ms": 83.80263068247585,
+      "p95_translation_error_m": 1.1483942037179529,
+      "p95_rotation_error_deg": 6.185007875783994
+    },
+    "robot3_to_robot2": {
+      "precision": 0.9981470043236566,
+      "correct_pair_recall": 0.8600319318786589,
+      "no_overlap_rejection_rate": 0.998696219035202,
+      "p95_latency_ms": 146.0570008493959,
+      "p95_translation_error_m": 1.133354776788834,
+      "p95_rotation_error_deg": 5.1869230032092615
+    }
+  },
+  "scope_caveat": "SC-direct decisions do not contain a metric transform and cannot be inserted into a pose graph without registration."
+}

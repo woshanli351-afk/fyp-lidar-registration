@@ -1,0 +1,48 @@
+{
+  "total_queries": 481,
+  "valid_queries": 158,
+  "no_overlap_queries": 323,
+  "overlap_coverage": 0.3284823284823285,
+  "mrr_within_candidate_list": 0.9514767932489452,
+  "mean_first_positive_rank_retrieved": 1.0263157894736843,
+  "queries_without_positive_in_candidate_list": 6,
+  "ranking": {
+    "recall_at_1_valid": 0.9430379746835443,
+    "precision_at_1_valid": 0.9430379746835443,
+    "recall_at_3_valid": 0.9620253164556962,
+    "precision_at_3_valid": 0.5991561181434598
+  },
+  "candidate_pair_average_precision": 0.9806697012485296,
+  "diagnostic_best_f1_on_same_data": {
+    "threshold": 0.5874870644464163,
+    "f1": 0.9618874773139746
+  },
+  "candidate_pair_threshold_metrics": {
+    "threshold": 0.5874870644464163,
+    "tp": 265,
+    "fp": 2,
+    "tn": 1157,
+    "fn": 19,
+    "precision": 0.9925093632958801,
+    "recall": 0.9330985915492958,
+    "false_positive_rate": 0.001725625539257981,
+    "specificity": 0.998274374460742
+  },
+  "top1_all_query_average_precision": 0.9996988470142832,
+  "top1_diagnostic_best_f1_on_same_data": {
+    "threshold": 0.5986469524086199,
+    "f1": 0.9966329966329966
+  },
+  "top1_all_query_threshold_metrics": {
+    "threshold": 0.5986469524086199,
+    "tp": 148,
+    "fp": 0,
+    "tn": 332,
+    "fn": 1,
+    "precision": 1.0,
+    "recall": 0.9932885906040269,
+    "false_positive_rate": 0.0,
+    "specificity": 1.0
+  },
+  "warning": "Thresholds marked diagnostic were selected on the evaluated data. Tune a deployable threshold on a separate validation split."
+}

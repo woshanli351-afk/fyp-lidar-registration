@@ -1,0 +1,43 @@
+{
+  "score_column": "gicp_quality",
+  "threshold": 0.5976962851457389,
+  "threshold_selection": "maximum F1 on validation blocks only",
+  "split": {
+    "block_size_frames": 250,
+    "validation_blocks": "odd floor(query_frame / block_size)",
+    "test_blocks": "even floor(query_frame / block_size)"
+  },
+  "validation_best_f1": 1.0,
+  "validation": {
+    "queries": 231,
+    "positives": 76,
+    "average_precision": 1.0,
+    "threshold_metrics": {
+      "threshold": 0.5976962851457389,
+      "tp": 76,
+      "fp": 0,
+      "tn": 155,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0,
+      "specificity": 1.0
+    }
+  },
+  "test": {
+    "queries": 250,
+    "positives": 73,
+    "average_precision": 1.0,
+    "threshold_metrics": {
+      "threshold": 0.5976962851457389,
+      "tp": 73,
+      "fp": 0,
+      "tn": 177,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0,
+      "specificity": 1.0
+    }
+  }
+}

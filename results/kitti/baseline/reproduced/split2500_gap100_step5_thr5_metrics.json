@@ -1,0 +1,26 @@
+{
+  "total_queries": 481,
+  "valid_queries": 158,
+  "overlap_coverage": 0.3284823284823285,
+  "recall_at_1_valid": 0.9430379746835443,
+  "precision_at_1_valid": 0.9430379746835443,
+  "recall_at_5_valid": 0.9683544303797469,
+  "precision_at_5_valid": 0.4012658227848101,
+  "recall_at_10_valid": 0.9746835443037974,
+  "precision_at_10_valid": 0.21772151898734177,
+  "config": {
+    "kitti_root": "../../data_raw/kitti/dataset",
+    "pose_file": "../../data_raw/kitti/dataset/poses/00.txt",
+    "output_dir": "../outputs/reproduced",
+    "sequence": "00",
+    "split_frame": 2500,
+    "boundary_gap": 100,
+    "frame_step": 5,
+    "positive_threshold": 5.0,
+    "top_k": 10,
+    "num_rings": 20,
+    "num_sectors": 60,
+    "max_radius": 80.0,
+    "lidar_height": 2.0
+  }
+}

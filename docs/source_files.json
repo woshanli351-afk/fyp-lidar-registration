@@ -1,0 +1,219 @@
+{
+  "source_commit": "2ff22b8e5aa661d36f25414cdcac5de8e4ed87b1",
+  "upstream_base_commit": "198b3ac289230cd35cc9b0e3d96173a2aaeb680c",
+  "note": "Hashes identify original local archive files before portability edits and path redaction. KITTI files originate in the 2026-08-24 project package; source_commit applies only to CU-Multi.",
+  "files": [
+    {
+      "destination": "src/cumulti/gicp_value_backend.py",
+      "source_sha256": "33b2070671d26de3825ba0ba46b69ea79430302a4cc3d6d6e6675951b514973f"
+    },
+    {
+      "destination": "src/cumulti/prepare_stage1_validation.py",
+      "source_sha256": "c171b0b54cab505faa945d66bb20864275fb25a748e4f1a7c5bd1c2c57a10633"
+    },
+    {
+      "destination": "src/cumulti/run_stage11_gicp_value_study.py",
+      "source_sha256": "196a3e4b00f4fe06cf6e6a43ab1e8d06bf95a4cb09b6459de75b77d16b6fcadc"
+    },
+    {
+      "destination": "src/cumulti/run_stage11_latency.py",
+      "source_sha256": "d2aa761a38dd14f640d9c70f931b3985645797ea6d6879ef95366521c803bff4"
+    },
+    {
+      "destination": "src/cumulti/run_stage5_visual_viewpoint.py",
+      "source_sha256": "e99d4a129dcacf8471bdb2f58a700c077e3535375b3691c6b6472b42c981591b"
+    },
+    {
+      "destination": "src/cumulti/run_stage8_efficient_sc_retrieval.py",
+      "source_sha256": "5747738b091e84d946e594789d80d337000001a1e414bdeaa6400735477bff2f"
+    },
+    {
+      "destination": "src/cumulti/run_stage9_frame_audit.py",
+      "source_sha256": "1ebbf2ed0ac7d7931228c22ea5ff9e888ccef2a7ad528b1e7e14aef8c31451ec"
+    },
+    {
+      "destination": "src/cumulti/run_stage9_sc_gicp_integration.py",
+      "source_sha256": "f1ec696958d4cdbb8ed70b68a112bd7c2a1bd47a4b71f371e88832bd2cb9aa81"
+    },
+    {
+      "destination": "src/cumulti/test_stage11_gicp_value.py",
+      "source_sha256": "e726582be256bf221821a0c256e2284deaee545007ca4337682d53c2eec68bfa"
+    },
+    {
+      "destination": "src/kitti/select_geometry_threshold.py",
+      "source_sha256": "d35ef0961192cb8eed24033171530b9dbbb077c3c8ea7e6b07fe3a3336e35383"
+    },
+    {
+      "destination": "src/kitti/score_cvtnet_candidates.py",
+      "source_sha256": "06d56c747d9bf527117b78fbc7abddc45d0913ab86893274872d5e4757fb9b49"
+    },
+    {
+      "destination": "src/kitti/prepare_candidate_manifest.py",
+      "source_sha256": "96d6d90dc1f105a7f9d9bed3cdbb9a8285e7c3dd6e8781e1eb41ad5eb3404279"
+    },
+    {
+      "destination": "src/kitti/estimate_keyframe_odometry.py",
+      "source_sha256": "5eeff5a7b5b60d7833df1b211f7d9e2efcc8e9237f491b47f7faca17c3e3c096"
+    },
+    {
+      "destination": "src/kitti/run_geometry_autodl.sh",
+      "source_sha256": "efd89be882e230a78d5e3a62ce6d2dbf22be723ff7d9f30f090bc25d7d03385d"
+    },
+    {
+      "destination": "src/kitti/evaluate_candidates.py",
+      "source_sha256": "801f65f4d7edf5ea0d1807734e9a1f75271ff1cfe0b9b9bd292e02bb6b1604a6"
+    },
+    {
+      "destination": "src/kitti/export_loop_edges.py",
+      "source_sha256": "d3486abbb7faa6d328ece16b5676c8c959cf1392e3e346d07c29762503c478e8"
+    },
+    {
+      "destination": "src/kitti/scan_context_baseline.py",
+      "source_sha256": "81f5064bebd0c4613aef9cc8f0eeef895e5d9563405f424044d8ca20bc7a3447"
+    },
+    {
+      "destination": "src/kitti/optimize_pose_graph_se2.py",
+      "source_sha256": "b39321bb22855d420313cdde2d0a4e4ab8a743fd8de7a226149896c24e06f4cf"
+    },
+    {
+      "destination": "src/kitti/README.md",
+      "source_sha256": "78f0c5d69f6fbbb1c5b534fcb06a9d241ad18b4fed87ba3d28a86fb06bd93d72"
+    },
+    {
+      "destination": "src/kitti/rerank_candidates.py",
+      "source_sha256": "b3a3d57b60145a75642ddb0c91cfc8d3abe20bb295922429229e0de3ff5f0677"
+    },
+    {
+      "destination": "src/kitti/run_cvtnet_autodl.sh",
+      "source_sha256": "42cf4937046f026a02f4437d6a7a85940908990795902c577b8994d215a6f93b"
+    },
+    {
+      "destination": "src/kitti/generate_cvtnet_inputs.py",
+      "source_sha256": "958182dd75395b91d2577aa9d3fa68191030b2733042eafc78cfd9600020c043"
+    },
+    {
+      "destination": "src/kitti/geometric_verify_candidates.py",
+      "source_sha256": "005ec95e4fbae967a5d1cc58f1366a9b70762707392aff0e7c77ed2d6953b523"
+    },
+    {
+      "destination": "src/kitti/test_pipeline.py",
+      "source_sha256": "148bd7de8574bca281b13a7c5d41ec5bf4725068e3661b9cfeab77d1bc891798"
+    },
+    {
+      "destination": "results/kitti/cvtnet/experiment_summary.md",
+      "source_sha256": "527fe5af78e58519c2f21dce0286550c990d00e619a08b136c4875276e1fb4b8"
+    },
+    {
+      "destination": "results/kitti/cvtnet/cvtnet_transfer/cvtnet_metrics.json",
+      "source_sha256": "67483246508cf79088fc270eb7cd4865c55440103d217f80ef0e35f46b0db67e"
+    },
+    {
+      "destination": "results/kitti/cvtnet/cvtnet_transfer/hybrid_a070_metrics.json",
+      "source_sha256": "af872302d42b5ab8e1e5acd859cbe201f04159141bc555d225a1699db07deb81"
+    },
+    {
+      "destination": "results/kitti/baseline/reproduced/split2500_gap100_step5_thr5_extended_metrics.json",
+      "source_sha256": "7dd1a1acb3b3846e276b4448d15dab2659e48aa2417ca901afb75e1910157dd9"
+    },
+    {
+      "destination": "results/kitti/baseline/reproduced/split2500_gap100_step5_thr5_metrics.json",
+      "source_sha256": "1020d955cd7817cd555c8fa51e3d7d6221576423745328fca7a41a45aec341d1"
+    },
+    {
+      "destination": "results/kitti/geometry/gicp_block_split_metrics.json",
+      "source_sha256": "39e426ac1b15685ccaef64af9c415cda9b62021383e50307f65b49340a18cd39"
+    },
+    {
+      "destination": "results/kitti/geometry/geometry_summary.md",
+      "source_sha256": "e65337e522160cd1c21966e02791eb9961f2a3d6eb42cd5f2887d38a70cd5696"
+    },
+    {
+      "destination": "results/kitti/geometry/gicp_metrics.json",
+      "source_sha256": "b87ddcb06b7401c9618aa5d603b9ecd139ed1be8cfe8550e105275569a4b8bcf"
+    },
+    {
+      "destination": "results/kitti/geometry/icp_metrics.json",
+      "source_sha256": "e74846d2a51dc02a47025d95506706d0360425ffc027f84548eb4d30e4c0eed3"
+    },
+    {
+      "destination": "results/kitti/geometry/pose_graph_test/pose_graph_metrics.json",
+      "source_sha256": "77861159e230e93894e3da48a02d198c08352f203a2541b0448bcc98e42be5a5"
+    },
+    {
+      "destination": "results/kitti/geometry/pose_graph_test/pose_graph_trajectory.png",
+      "source_sha256": "304950be8ed1c8d677f7de094562cf56ac29d6a5df1a7944d20658adef64b1e0"
+    },
+    {
+      "destination": "results/kitti/geometry/pose_graph_all/pose_graph_metrics.json",
+      "source_sha256": "82943f08531e5ac8316e7aec9df986e1fe3cb446f236909e738e31b1e929a096"
+    },
+    {
+      "destination": "results/kitti/geometry/pose_graph_all/pose_graph_trajectory.png",
+      "source_sha256": "5aad9c0775f92b6ab24547d7236450045ddae2718739986ed5885adda6c928d3"
+    },
+    {
+      "destination": "results/cumulti_stage11/transform_error_distribution.png",
+      "source_sha256": "d0a8329822d32fc8e11c21af6f1d97a194e73a26f1aa126a44b82807ce36d727"
+    },
+    {
+      "destination": "results/cumulti_stage11/frozen_policy.json",
+      "source_sha256": "df23e53128c6f5dfe74435fb7e1a90544f69ed632538ca1a08480c04d481d39a"
+    },
+    {
+      "destination": "results/cumulti_stage11/VALIDATION_REPORT.txt",
+      "source_sha256": "4d9ab8889c664714cd673740c1a9ed2dae7f91464419cecde0acecd48429f31a"
+    },
+    {
+      "destination": "results/cumulti_stage11/combined_accuracy_pose_summary.csv",
+      "source_sha256": "421ded02ab2b9e20a97087c838a2fc87669de2d53cd9ae087d3437b3ba7bd487"
+    },
+    {
+      "destination": "results/cumulti_stage11/combined_latency_summary.csv",
+      "source_sha256": "03965732a61e9fc558ecb2ca2d1ebd266b8ab7a29ae9aa8d8a172d8ef2780cf1"
+    },
+    {
+      "destination": "results/cumulti_stage11/summary.txt",
+      "source_sha256": "0bd9cdd55a852126319f44c7e683f3b5aec5413da2336ca9d832a2275a4fe15f"
+    },
+    {
+      "destination": "results/cumulti_stage11/strategy_decision.json",
+      "source_sha256": "5a057a567973203d609e1f45f0ff01251700fbace900989080d03bc4b1186762"
+    },
+    {
+      "destination": "results/cumulti_stage11/robot2_frame_convention_audit.json",
+      "source_sha256": "b1dccd366c835018a9b2fa67cd52d2dd0e38d9e8617d77118ccece2a67feb691"
+    },
+    {
+      "destination": "results/cumulti_stage11/combined_policy_tradeoff.csv",
+      "source_sha256": "2a387c673a75aa43c25cc191348a9c5ba116ff45bfa82a621044b94111b6ef50"
+    },
+    {
+      "destination": "results/cumulti_stage11/run_manifest.json",
+      "source_sha256": "96abd4b5c331c89dee0c162fe162f4f2e81b6e09e5c03716b59b9fd008cb8455"
+    },
+    {
+      "destination": "results/cumulti_stage11/accuracy_latency_tradeoff.png",
+      "source_sha256": "d2fb63b62457741d143dd36bbca77fae036ae7979a9c3e94a29b6de264dc5888"
+    },
+    {
+      "destination": "results/cumulti_stage11/robot2_to_robot3/latency_summary.csv",
+      "source_sha256": "0a62b16328439dc87e3d98a041719c860f829e25302e32daf19b5bf99c2e9669"
+    },
+    {
+      "destination": "results/cumulti_stage11/robot2_to_robot3/policy_accuracy_pose_summary.csv",
+      "source_sha256": "f363421a665ea8326d872ab462a2231686325688cf506a582246e7a0edf5ee5a"
+    },
+    {
+      "destination": "results/cumulti_stage11/robot3_to_robot2/latency_summary.csv",
+      "source_sha256": "9b97232cdcd0ba1ded1926472a32a745e3f45aa0111009aa69b7ba62b6b9ecfe"
+    },
+    {
+      "destination": "results/cumulti_stage11/robot3_to_robot2/policy_accuracy_pose_summary.csv",
+      "source_sha256": "25a586756b6d267065a5960fc785c717c7bd9fa0dd519994bc89257257a0d83c"
+    },
+    {
+      "destination": "docs/CUMULTI_STAGE11_GICP_VALUE_STUDY.md",
+      "source_sha256": "af083c8fd4296e9ac738a3adc7403c05abaef5f0d1c44bdf54f4d9c9efe76951"
+    }
+  ]
+}

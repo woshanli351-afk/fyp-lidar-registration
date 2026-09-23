@@ -1,0 +1,13 @@
+[PASS] Independent worktree used; Stage 4-10 frozen outputs were read-only.
+[PASS] Robot2 frame convention resolved; max TF/UTM yaw residual 2.842e-14 deg.
+[PASS] Online candidate and GICP artifacts contain no GT/evaluation fields.
+[PASS] Robot2->Robot3 has 2,230 complete Top-3 queries (6,690 pairs).
+[PASS] Robot3->Robot2 has 4,180 complete Top-3 queries (12,540 pairs).
+[PASS] Every registration transform is T_query_from_candidate and every quality value is finite.
+[PASS] Generic backend reproduces 30 Stage-9 pairs: max quality diff 1.110e-16, max transform diff 2.769e-15.
+[PASS] Frozen SC-safe and GICP thresholds were not tuned on held-out Robot2/Robot3 labels.
+[PASS] Five policies evaluated in both directions with query-level and event-level false-positive accounting.
+[PASS] Three latency repetitions used 20 warm-up plus 200 measured queries per policy/direction.
+[PASS] All measured policy p95 latencies are <=500 ms: True.
+[PASS] Mapping-hazard event count is zero for every GICP policy/direction: True.
+[PASS] No PGO, map merge, GICP parameter sweep, ICP, or NDT experiment was run.

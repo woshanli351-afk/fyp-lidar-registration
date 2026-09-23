@@ -1,0 +1,26 @@
+{
+  "name": "stage11_selective_gicp_v1",
+  "development_direction": "robot1_to_robot3",
+  "sc_safe_threshold_policy": "strictly greater than the maximum incorrect M1000 Rank-1 SC score",
+  "sc_safe_threshold": 0.7502294182777406,
+  "development_max_incorrect_sc_score": 0.7502294182777405,
+  "gicp_quality_threshold": 0.6091,
+  "candidate_shortlist_M": 1000,
+  "top_k": 3,
+  "selection": "accept Rank-1 without verification when SC_score >= sc_safe_threshold; otherwise try GICP ranks 1..3 and accept first passing rank",
+  "mapping_note": "SC-direct decisions have no metric transform; a mapping edge still requires GICP or another registration backend.",
+  "gicp_parameters": {
+    "voxel_m": 0.75,
+    "coarse_correspondence_m": 3.0,
+    "fine_correspondence_m": 1.0,
+    "iterations_per_stage": 30,
+    "quality": "fitness/(1+inlier_rmse)",
+    "transform_direction": "T_query_from_candidate"
+  },
+  "source_file": "<UPSTREAM_REPO>/outputs/cumulti_v1/09_sc_gicp_integration/rank1_gicp_results.csv",
+  "source_sha256": "39c5ac9d6ae2fd1578c056f60b1bd58212ea3eac3f1630dc15adc1632641390d",
+  "heldout_directions": [
+    "robot2_to_robot3",
+    "robot3_to_robot2"
+  ]
+}

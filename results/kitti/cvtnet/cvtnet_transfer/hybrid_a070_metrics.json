@@ -1,0 +1,54 @@
+{
+  "total_queries": 481,
+  "valid_queries": 158,
+  "no_overlap_queries": 323,
+  "overlap_coverage": 0.3284823284823285,
+  "mrr_within_candidate_list": 0.9539632308619651,
+  "mean_first_positive_rank_retrieved": 1.0844155844155845,
+  "queries_without_positive_in_candidate_list": 4,
+  "ranking": {
+    "recall_at_1_valid": 0.9430379746835443,
+    "precision_at_1_valid": 0.9430379746835443,
+    "recall_at_5_valid": 0.9683544303797469,
+    "precision_at_5_valid": 0.41139240506329117,
+    "recall_at_10_valid": 0.9746835443037974,
+    "precision_at_10_valid": 0.21772151898734177
+  },
+  "candidate_pair_average_precision": 0.4904897997239677,
+  "diagnostic_best_f1_on_same_data": {
+    "threshold": 0.9626860263154606,
+    "f1": 0.512998266897747
+  },
+  "candidate_pair_threshold_metrics": {
+    "threshold": 0.9626860263154606,
+    "tp": 148,
+    "fp": 85,
+    "tn": 4381,
+    "fn": 196,
+    "precision": 0.6351931330472103,
+    "recall": 0.43023255813953487,
+    "false_positive_rate": 0.01903269144648455,
+    "specificity": 0.9809673085535154
+  },
+  "top1_all_query_average_precision": 0.8746897943792952,
+  "top1_diagnostic_best_f1_on_same_data": {
+    "threshold": 0.9974698475331991,
+    "f1": 0.8173374613003096
+  },
+  "top1_all_query_threshold_metrics": {
+    "threshold": 0.9974698475331991,
+    "tp": 132,
+    "fp": 42,
+    "tn": 290,
+    "fn": 17,
+    "precision": 0.7586206896551724,
+    "recall": 0.8859060402684564,
+    "false_positive_rate": 0.12650602409638553,
+    "specificity": 0.8734939759036144
+  },
+  "warning": "Thresholds marked diagnostic were selected on the evaluated data. Tune a deployable threshold on a separate validation split.",
+  "fusion": {
+    "alpha_scan_context": 0.7,
+    "normalization": "query_minmax"
+  }
+}

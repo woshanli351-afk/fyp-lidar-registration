@@ -1,0 +1,51 @@
+{
+  "experiment_type": "real GICP keyframe odometry and loop edges; KITTI GT used only for evaluation",
+  "nodes": 870,
+  "odometry_edges": 868,
+  "loop_edges": 149,
+  "optimizer_success": false,
+  "optimizer_message": "The maximum number of function evaluations is exceeded.",
+  "function_evaluations": 2000,
+  "initial_cost": 563.8970787566321,
+  "final_cost": 3.192215535458061,
+  "initial_trajectory": {
+    "translation_rmse_m": 3.9367536874879434,
+    "translation_mean_m": 3.3412921775909985,
+    "translation_median_m": 3.2326344105721008,
+    "rotation_rmse_degrees": 1.0720535870717829
+  },
+  "optimized_trajectory": {
+    "translation_rmse_m": 3.6147909573788164,
+    "translation_mean_m": 3.0653462226916663,
+    "translation_median_m": 2.964040303049369,
+    "rotation_rmse_degrees": 1.302821025079775
+  },
+  "robot_a_initial": {
+    "translation_rmse_m": 4.442239020047295,
+    "translation_mean_m": 3.84739913359541,
+    "translation_median_m": 3.6161194519231437,
+    "rotation_rmse_degrees": 1.2095453010392305
+  },
+  "robot_a_optimized": {
+    "translation_rmse_m": 4.130963650176093,
+    "translation_mean_m": 3.533145737704039,
+    "translation_median_m": 3.290605866122603,
+    "rotation_rmse_degrees": 1.460749675161992
+  },
+  "robot_b_initial": {
+    "translation_rmse_m": 3.2032592076828954,
+    "translation_mean_m": 2.7154889749223035,
+    "translation_median_m": 2.717382113451156,
+    "rotation_rmse_degrees": 0.8725860814166735
+  },
+  "robot_b_optimized": {
+    "translation_rmse_m": 2.8500858699871325,
+    "translation_mean_m": 2.486910318524697,
+    "translation_median_m": 1.98475743192302,
+    "rotation_rmse_degrees": 1.0759527114045158
+  },
+  "improvement": {
+    "translation_rmse_percent": 8.178381368700073,
+    "rotation_rmse_percent": -21.52573721975152
+  }
+}
