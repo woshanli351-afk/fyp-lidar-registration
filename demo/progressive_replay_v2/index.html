@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>CU-Multi Progressive Mapping Replay</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">CU</span>
+      <div><strong>Multi-Robot Progressive Mapping</strong><small>Source-backed offline replay · Robot1 + Robot3</small></div>
+    </div>
+    <div class="badges"><span>FROZEN INPUTS</span><span>BATCH SNAPSHOTS</span><span>GT-FREE REPLAY</span></div>
+  </header>
+
+  <nav class="stagebar" aria-label="Replay stages">
+    <button data-stage="0"><i>1</i><span>Local mapping</span></button>
+    <button data-stage="1"><i>2</i><span>SC retrieval</span></button>
+    <button data-stage="2"><i>3</i><span>GICP verify</span></button>
+    <button data-stage="3"><i>4</i><span>First bridge</span></button>
+    <button data-stage="4"><i>5</i><span>Progressive fusion</span></button>
+    <button data-stage="5"><i>6</i><span>Final map</span></button>
+  </nav>
+
+  <main>
+    <section class="panel hero">
+      <div class="panel-head">
+        <div><p class="eyebrow">A · SYSTEM REPLAY</p><h1 id="sceneTitle">Independent local mapping</h1></div>
+        <div class="legend"><span><i class="r1"></i>Robot1</span><span><i class="r3"></i>Robot3</span><span><i class="loop"></i>Accepted loop</span></div>
+      </div>
+      <canvas id="trajectory" width="1120" height="610"></canvas>
+      <div class="hero-stats">
+        <div><small>Active snapshot</small><b id="snapshotName">LOCAL</b></div>
+        <div><small>Accepted constraints</small><b id="loopCount">0 / 75</b></div>
+        <div><small>Graph state</small><b id="graphState">2 components</b></div>
+        <div><small>Transform convention</small><b>T<sub>query←candidate</sub></b></div>
+      </div>
+    </section>
+
+    <aside class="side-stack">
+      <section class="panel event-panel">
+        <div class="panel-head compact"><div><p class="eyebrow">B · CURRENT EVENT</p><h2>Scan Context → GICP</h2></div><span id="eventState" class="state waiting">WAITING</span></div>
+        <div id="eventGrid" class="event-grid muted-event"><span>Replay has not reached the first candidate.</span></div>
+        <div class="cloud-pair">
+          <div><canvas id="cloudRaw" width="300" height="132"></canvas><small>Before GICP</small></div>
+          <div><canvas id="cloudAligned" width="300" height="132"></canvas><small>After GICP</small></div>
+        </div>
+        <div class="quality-row"><span>GICP quality</span><div class="quality-track"><i id="qualityBar"></i><em></em></div><b id="qualityValue">—</b></div>
+        <p id="eventMessage" class="event-message">Robot maps remain independent.</p>
+      </section>
+
+      <section class="panel map-panel">
+        <div class="panel-head compact"><div><p class="eyebrow">C · MAP EVOLUTION</p><h2 id="mapTitle">Independent frames</h2></div><span id="mapTag" class="state neutral">LOCAL</span></div>
+        <div class="map-frame"><canvas id="mapCanvas" width="720" height="300" aria-label="Frozen batch map snapshot"></canvas><div id="mapEmpty">Two local maps<br><small>First bridge not received</small></div></div>
+        <div class="snapshot-dots"><button data-map="K1">K1</button><button data-map="K10">K10</button><button data-map="K75">K75</button></div>
+      </section>
+    </aside>
+
+    <section class="panel metrics accuracy-panel">
+      <div class="panel-head compact">
+        <div><p class="eyebrow">D · ACCURACY</p><h2>Which decisions are safe?</h2></div>
+        <select id="accuracyDirection" aria-label="Accuracy direction"><option value="robot2_to_robot3">Robot2 → Robot3</option><option value="robot3_to_robot2">Robot3 → Robot2</option></select>
+      </div>
+      <div class="metric-summary"><div><small>Selected policy</small><b>Rank-1 + GICP</b></div><div><small>Mapping hazards</small><b class="safe">0 events</b></div><div><small>Pose output</small><b class="safe">Available</b></div></div>
+      <canvas id="accuracyChart" width="760" height="280"></canvas>
+      <div class="chart-key"><span><i class="precision"></i>Precision</span><span><i class="recall"></i>Correct-pair recall</span></div>
+    </section>
+
+    <section class="panel metrics efficiency-panel">
+      <div class="panel-head compact">
+        <div><p class="eyebrow">E · EFFICIENCY</p><h2>Latency and GICP calls</h2></div>
+        <select id="efficiencyDirection" aria-label="Efficiency direction"><option value="robot2_to_robot3">Robot2 → Robot3</option><option value="robot3_to_robot2">Robot3 → Robot2</option></select>
+      </div>
+      <div class="metric-summary"><div><small>Rank-1 GICP p95</small><b id="rank1P95">83.8 ms</b></div><div><small>500 ms compliance</small><b class="safe">100%</b></div><div><small>Calls / query</small><b>1.00</b></div></div>
+      <canvas id="efficiencyChart" width="760" height="280"></canvas>
+      <div class="chart-key"><span><i class="latency"></i>p95 latency</span><span><i class="budget"></i>500 ms budget</span><span><i class="calls"></i>Mean GICP calls</span></div>
+    </section>
+  </main>
+
+  <footer class="controls">
+    <button id="play" class="primary">▶ Play</button><button id="reset">Reset</button>
+    <label>Speed <select id="speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select></label>
+    <input id="timeline" type="range" min="0" max="1000" value="0" aria-label="Replay timeline">
+    <span id="timeLabel">00:00 / 01:00</span>
+    <p><b>Claim boundary:</b> frozen offline candidates and batch GTSAM snapshots. This replay does not claim live sensing, causal online SC/GICP, or validated incremental iSAM2.</p>
+  </footer>
+  <script src="app.js"></script>
+</body>
+</html>

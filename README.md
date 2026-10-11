@@ -33,6 +33,14 @@ KITTI CVTNet 使用公开 NCLT checkpoint 做跨数据集迁移；它没有提�
 
 ![Stage 11 trade-off](results/cumulti_stage11/accuracy_latency_tradeoff.png)
 
+## Progressive mapping demo
+
+`demo/progressive_replay_v2/` combines the frozen Stage 11 accuracy/latency
+metrics with the team repository's stable-segment clean batch map snapshots.
+It includes direction-switchable accuracy and efficiency panels plus a six-stage
+Robot1/Robot3 mapping replay. See the demo README for the local launch command
+and its explicit offline claim boundary.
+
 ## 目录
 
 ```text
@@ -40,6 +48,7 @@ src/kitti/              # KITTI SC、CVTNet 适配、几何验证及历史 PGO �
 src/cumulti/            # 通用 GICP、Stage 11 及其共享依赖
 results/kitti/          # 历史指标与图表
 results/cumulti_stage11/# Stage 11 汇总、冻结配置、审计与图表
+demo/progressive_replay_v2/ # 准确率/效率面板与渐进式地图重放
 docs/                  # 报告、接口、运行说明与来源
 ```
 
