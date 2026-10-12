@@ -27,8 +27,23 @@ never writes personal source paths into the bundle.
 ## Run locally
 
 ```bash
-python -m http.server 8000 --directory demo/progressive_replay_v2
+python scripts/serve_progressive_demo.py
 ```
 
-Open <http://127.0.0.1:8000>. `file://` loading is unsupported because the demo
-fetches its JSON bundle.
+The launcher validates the 75-event/10-policy bundle before opening
+<http://127.0.0.1:8000>. Use `--no-browser` on a headless host. `file://`
+loading is unsupported because the demo fetches its JSON bundle.
+
+## Presenter controls
+
+- `Space`: play or pause.
+- `1`–`6`: jump directly to a replay stage.
+- `R`: reset the replay.
+- `Fullscreen`: enter or leave browser fullscreen.
+- K1/K10/K75 buttons: inspect a frozen batch map without changing the timeline.
+
+The SC stage now exposes the Rank-1 candidate before any map edge exists; the
+GICP stage then shows the aligned cloud and measured quality against the frozen
+threshold. Accuracy callouts quantify how many protocol false positives GICP
+removes, while the efficiency panel reports the remaining 500 ms budget
+headroom.

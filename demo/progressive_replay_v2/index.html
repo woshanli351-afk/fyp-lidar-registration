@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>CU-Multi Progressive Mapping Replay</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%2306101d'/%3E%3Cpath d='M9 32h46M32 9v46' stroke='%233ee6a8' stroke-width='6'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -27,7 +28,7 @@
   <main>
     <section class="panel hero">
       <div class="panel-head">
-        <div><p class="eyebrow">A · SYSTEM REPLAY</p><h1 id="sceneTitle">Independent local mapping</h1></div>
+        <div><p class="eyebrow">A · SYSTEM REPLAY</p><h1 id="sceneTitle">Independent local mapping</h1><p id="sceneNote" class="scene-note">Each robot starts in its own local frame.</p></div>
         <div class="legend"><span><i class="r1"></i>Robot1</span><span><i class="r3"></i>Robot3</span><span><i class="loop"></i>Accepted loop</span></div>
       </div>
       <canvas id="trajectory" width="1120" height="610"></canvas>
@@ -63,9 +64,10 @@
         <div><p class="eyebrow">D · ACCURACY</p><h2>Which decisions are safe?</h2></div>
         <select id="accuracyDirection" aria-label="Accuracy direction"><option value="robot2_to_robot3">Robot2 → Robot3</option><option value="robot3_to_robot2">Robot3 → Robot2</option></select>
       </div>
-      <div class="metric-summary"><div><small>Selected policy</small><b>Rank-1 + GICP</b></div><div><small>Mapping hazards</small><b class="safe">0 events</b></div><div><small>Pose output</small><b class="safe">Available</b></div></div>
+      <div class="metric-summary"><div><small>Rank-1 GICP precision</small><b id="rank1Precision">99.65%</b></div><div><small>Correct-pair recall</small><b id="rank1Recall">91.15%</b></div><div><small>Mapping hazards</small><b id="rank1Hazards" class="safe">0 events</b></div></div>
       <canvas id="accuracyChart" width="760" height="280"></canvas>
       <div class="chart-key"><span><i class="precision"></i>Precision</span><span><i class="recall"></i>Correct-pair recall</span></div>
+      <p id="accuracyInsight" class="chart-insight"></p>
     </section>
 
     <section class="panel metrics efficiency-panel">
@@ -73,18 +75,19 @@
         <div><p class="eyebrow">E · EFFICIENCY</p><h2>Latency and GICP calls</h2></div>
         <select id="efficiencyDirection" aria-label="Efficiency direction"><option value="robot2_to_robot3">Robot2 → Robot3</option><option value="robot3_to_robot2">Robot3 → Robot2</option></select>
       </div>
-      <div class="metric-summary"><div><small>Rank-1 GICP p95</small><b id="rank1P95">83.8 ms</b></div><div><small>500 ms compliance</small><b class="safe">100%</b></div><div><small>Calls / query</small><b>1.00</b></div></div>
+      <div class="metric-summary"><div><small>Rank-1 GICP p95</small><b id="rank1P95">83.8 ms</b></div><div><small>Budget headroom</small><b id="budgetHeadroom" class="safe">416.2 ms</b></div><div><small>Calls / query</small><b id="rank1Calls">1.00</b></div></div>
       <canvas id="efficiencyChart" width="760" height="280"></canvas>
       <div class="chart-key"><span><i class="latency"></i>p95 latency</span><span><i class="budget"></i>500 ms budget</span><span><i class="calls"></i>Mean GICP calls</span></div>
+      <p id="efficiencyInsight" class="chart-insight"></p>
     </section>
   </main>
 
   <footer class="controls">
-    <button id="play" class="primary">▶ Play</button><button id="reset">Reset</button>
+    <button id="play" class="primary">▶ Play</button><button id="reset">Reset</button><button id="fullscreen">Fullscreen</button>
     <label>Speed <select id="speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select></label>
     <input id="timeline" type="range" min="0" max="1000" value="0" aria-label="Replay timeline">
     <span id="timeLabel">00:00 / 01:00</span>
-    <p><b>Claim boundary:</b> frozen offline candidates and batch GTSAM snapshots. This replay does not claim live sensing, causal online SC/GICP, or validated incremental iSAM2.</p>
+    <p><b>Keys:</b> Space play/pause · 1–6 jump · R reset.<br><b>Claim boundary:</b> frozen offline candidates and batch GTSAM snapshots; no live sensing or validated incremental iSAM2 claim.</p>
   </footer>
   <script src="app.js"></script>
 </body>

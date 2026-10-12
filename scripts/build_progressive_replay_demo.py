@@ -84,6 +84,7 @@ def metric_rows(stage11_root: Path) -> list[dict]:
         "precision",
         "correct_pair_recall",
         "no_overlap_rejection_rate",
+        "protocol_fp_query_count",
         "mapping_hazard_event_count",
         "mean_gicp_calls",
         "mean_ms",
@@ -196,6 +197,38 @@ def map_points(map_root: Path) -> dict[str, dict[str, list[list[float]]]]:
     }
 
 
+def validate_bundle(bundle: dict) -> None:
+    expected_directions = {"robot2_to_robot3", "robot3_to_robot2"}
+    expected_policies = set(POLICY_LABELS)
+    metrics = bundle["metrics"]
+    if len(metrics) != len(expected_directions) * len(expected_policies):
+        raise ValueError(f"Expected 10 policy rows, received {len(metrics)}")
+    for direction in expected_directions:
+        policies = {row["policy"] for row in metrics if row["direction"] == direction}
+        if policies != expected_policies:
+            raise ValueError(f"Incomplete policies for {direction}: {sorted(policies)}")
+
+    events = bundle["events"]
+    if len(events) != 75:
+        raise ValueError(f"Expected 75 frozen clean loops, received {len(events)}")
+    forbidden = ("gt", "ground_truth", "error", "distance")
+    for event in events:
+        leaked = [key for key in event if any(marker in key.lower() for marker in forbidden)]
+        if leaked:
+            raise ValueError(f"GT/evaluation fields leaked into event {event['index']}: {leaked}")
+        if event["transform_direction"] != "T_query_from_candidate":
+            raise ValueError(f"Unexpected transform direction in event {event['index']}")
+
+    expected_snapshots = {"K1", "K10", "K75"}
+    if set(bundle["map_points"]) != expected_snapshots:
+        raise ValueError("Map bundle must contain K1, K10 and K75")
+    if set(bundle["trajectories"]) != {"local", *expected_snapshots}:
+        raise ValueError("Trajectory bundle must contain local, K1, K10 and K75")
+    for snapshot, robots in bundle["map_points"].items():
+        if set(robots) != {"robot1", "robot3"} or any(not points for points in robots.values()):
+            raise ValueError(f"Incomplete map points for {snapshot}")
+
+
 def build(team_root: Path, map_root: Path, output: Path) -> None:
     stage11_root = REPO / "results" / "cumulti_stage11"
     clean_root = team_root / "outputs" / "cumulti_v1" / "12d_clean_backend"
@@ -253,6 +286,7 @@ def build(team_root: Path, map_root: Path, output: Path) -> None:
             for path in required
         ],
     }
+    validate_bundle(bundle)
     target = output / "data" / "demo.json"
     target.write_text(json.dumps(bundle, separators=(",", ":")), encoding="utf-8")
     print(f"Wrote {target} ({target.stat().st_size:,} bytes)")
