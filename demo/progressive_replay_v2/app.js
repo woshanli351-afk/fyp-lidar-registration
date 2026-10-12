@@ -7,12 +7,17 @@ const STAGES=[
   {p:.58,title:'Progressive batch fusion',note:'Accepted constraints accumulate through stable K10 batch snapshots.',snap:'K10'},
   {p:.90,title:'Final clean map',note:'All 75 frozen clean loop factors produce the final K75 batch result.',snap:'K75'}
 ];
-let D=null,S={p:0,playing:false,speed:1,mapOverride:null},last=0;
+let D=null,S={p:0,playing:false,speed:1,mapOverride:null,view:'system'},last=0;
 const $=q=>document.querySelector(q),$$=q=>[...document.querySelectorAll(q)];
 
-fetch('data/demo.json').then(r=>{if(!r.ok)throw new Error(`data/demo.json ${r.status}`);return r.json()}).then(data=>{D=data;const preview=Number(new URLSearchParams(location.search).get('p'));if(Number.isFinite(preview))S.p=Math.max(0,Math.min(1,preview));bind();render();requestAnimationFrame(tick)}).catch(error=>{$('#sceneTitle').textContent='Demo data failed to load';console.error(error)});
+fetch('data/demo.json').then(r=>{if(!r.ok)throw new Error(`data/demo.json ${r.status}`);return r.json()}).then(data=>{D=data;const params=new URLSearchParams(location.search),preview=Number(params.get('p'));if(Number.isFinite(preview))S.p=Math.max(0,Math.min(1,preview));if(params.get('view')==='analysis')S.view='analysis';bind();render();requestAnimationFrame(tick)}).catch(error=>{$('#sceneTitle').textContent='Demo data failed to load';console.error(error)});
 
 function bind(){
+  document.body.classList.toggle('system-view',S.view==='system');
+  $('#systemView').classList.toggle('active',S.view==='system');
+  $('#analysisView').classList.toggle('active',S.view==='analysis');
+  $('#systemView').onclick=()=>setView('system');
+  $('#analysisView').onclick=()=>setView('analysis');
   $('#play').onclick=togglePlay;
   $('#reset').onclick=resetReplay;
   $('#fullscreen').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();
@@ -28,6 +33,14 @@ function bind(){
     else if(event.key.toLowerCase()==='r')resetReplay();
     else if(/^[1-6]$/.test(event.key))jumpToStage(Number(event.key)-1);
   });
+}
+
+function setView(view){
+  S.view=view;
+  document.body.classList.toggle('system-view',view==='system');
+  $('#systemView').classList.toggle('active',view==='system');
+  $('#analysisView').classList.toggle('active',view==='analysis');
+  render();
 }
 
 function togglePlay(){S.playing=!S.playing;$('#play').textContent=S.playing?'❚❚ Pause':'▶ Play'}
@@ -49,6 +62,9 @@ function render(){
   const seconds=Math.round(S.p*60);$('#timeline').value=Math.round(S.p*1000);$('#timeLabel').textContent=`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')} / 01:00`;
   $('#sceneTitle').textContent=stage.title;$('#sceneNote').textContent=stage.note;$('#snapshotName').textContent=snapshot().toUpperCase();$('#loopCount').textContent=`${loops} / 75`;
   $('#graphState').textContent=loops?'1 connected graph':'2 components';
+  $('#systemPhase').textContent=stage.title.toUpperCase();$('#systemLoops').textContent=`${loops} / 75`;
+  const event=activeEvent();$('#systemEvent').textContent=event?`${event.query_robot} #${event.query_keyframe} ↔ ${event.candidate_robot} #${event.candidate_keyframe}`:'Waiting for inter-robot candidate';
+  $('#systemQuality').textContent=event&&idx>=2?`${event.gicp_quality.toFixed(4)} / ${D.metadata.gicp_threshold.toFixed(4)} threshold`:'—';
   $$('.stagebar button').forEach((button,index)=>button.classList.toggle('active',index===idx));
   renderTrajectory();renderEvent();renderMap();renderAccuracy();renderEfficiency();
 }
@@ -68,10 +84,30 @@ function currentTrajectory(){
   return D.trajectories.K75;
 }
 function renderTrajectory(){
-  const canvas=$('#trajectory'),ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height,tr=currentTrajectory(),b=bounds([tr]);drawGrid(ctx,w,h);
-  for(const robot of ['robot1','robot3']){const pts=tr[robot],color=robot==='robot1'?COLORS.r1:COLORS.r3;ctx.strokeStyle=color;ctx.lineWidth=2.3;ctx.beginPath();pts.forEach((p,i)=>{const u=xy(p,b,w,h);i?ctx.lineTo(...u):ctx.moveTo(...u)});ctx.stroke();ctx.fillStyle=color;pts.filter((_,i)=>i%12===0).forEach(p=>{const u=xy(p,b,w,h);ctx.beginPath();ctx.arc(u[0],u[1],2.2,0,Math.PI*2);ctx.fill()})}
-  const event=loopProgress()?activeEvent():null;if(event){const q=findPoint(tr,event.query_robot,event.query_keyframe),c=findPoint(tr,event.candidate_robot,event.candidate_keyframe);if(q&&c){const a=xy(q,b,w,h),z=xy(c,b,w,h);ctx.strokeStyle=COLORS.green;ctx.lineWidth=2;ctx.setLineDash([6,5]);ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...z);ctx.stroke();ctx.setLineDash([]);[a,z].forEach(p=>{ctx.fillStyle=COLORS.green;ctx.beginPath();ctx.arc(p[0],p[1],6,0,Math.PI*2);ctx.fill()})}}
-  ctx.fillStyle='#9bb4ca';ctx.font='14px system-ui';ctx.fillText(`${snapshot().toUpperCase()} · ${loopProgress()} frozen loop factors`,18,27);
+  const canvas=$('#trajectory'),ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height,tr=currentTrajectory(),snap=snapshot(),map=snap==='local'?null:D.map_points[snap];
+  const boundGroups=[tr];
+  if(map)boundGroups.push({robot1:map.robot1.map(p=>[0,p[0],p[1]]),robot3:map.robot3.map(p=>[0,p[0],p[1]])});
+  const b=bounds(boundGroups);drawGrid(ctx,w,h);
+  if(map){
+    for(const [robot,color] of [['robot1',COLORS.r1],['robot3',COLORS.r3]]){
+      ctx.fillStyle=color;ctx.globalAlpha=.20;
+      for(let i=0;i<map[robot].length;i+=2){const p=map[robot][i],u=xy([0,p[0],p[1]],b,w,h);ctx.fillRect(u[0],u[1],1.5,1.5)}
+    }
+    ctx.globalAlpha=1;
+  }
+  const loops=loopProgress();
+  for(let i=0;i<loops;i++){
+    const event=D.events[i],q=findPoint(tr,event.query_robot,event.query_keyframe),c=findPoint(tr,event.candidate_robot,event.candidate_keyframe);if(!q||!c)continue;
+    const a=xy(q,b,w,h),z=xy(c,b,w,h);ctx.strokeStyle=i===loops-1?COLORS.green:'rgba(62,230,168,.22)';ctx.lineWidth=i===loops-1?2.4:1;ctx.setLineDash(i===loops-1?[7,5]:[]);ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...z);ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  for(const robot of ['robot1','robot3']){
+    const pts=tr[robot],color=robot==='robot1'?COLORS.r1:COLORS.r3;ctx.strokeStyle=color;ctx.lineWidth=2.7;ctx.beginPath();pts.forEach((p,i)=>{const u=xy(p,b,w,h);i?ctx.lineTo(...u):ctx.moveTo(...u)});ctx.stroke();ctx.fillStyle=color;pts.filter((_,i)=>i%12===0).forEach(p=>{const u=xy(p,b,w,h);ctx.beginPath();ctx.arc(u[0],u[1],2.2,0,Math.PI*2);ctx.fill()});
+    const travel=Math.min(1,S.p/.2),marker=pts[Math.min(pts.length-1,Math.floor(travel*(pts.length-1)))],m=xy(marker,b,w,h);ctx.shadowColor=color;ctx.shadowBlur=16;ctx.beginPath();ctx.arc(m[0],m[1],8,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='#07111e';ctx.font='bold 9px system-ui';ctx.textAlign='center';ctx.fillText(robot==='robot1'?'R1':'R3',m[0],m[1]+3);
+  }
+  ctx.textAlign='left';
+  const event=loops?activeEvent():null;if(event){const q=findPoint(tr,event.query_robot,event.query_keyframe),c=findPoint(tr,event.candidate_robot,event.candidate_keyframe);if(q&&c){for(const p of [xy(q,b,w,h),xy(c,b,w,h)]){ctx.fillStyle=COLORS.green;ctx.beginPath();ctx.arc(p[0],p[1],6,0,Math.PI*2);ctx.fill()}}}
+  ctx.fillStyle='#9bb4ca';ctx.font='14px system-ui';ctx.fillText(`${snap.toUpperCase()} · ${loops} verified inter-robot constraints`,18,27);ctx.fillStyle='#607d96';ctx.font='11px ui-monospace,monospace';ctx.fillText(loops?'WORLD / COMMON FRAME':'ROBOT1 LOCAL + ROBOT3 LOCAL FRAMES',18,h-18);
 }
 function findPoint(tr,robot,keyframe){const list=tr[robot];if(!list)return null;let best=list[0],distance=Infinity;for(const point of list){const d=Math.abs(point[0]-keyframe);if(d<distance){best=point;distance=d}}return best}
 

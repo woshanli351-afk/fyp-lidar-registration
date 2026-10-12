@@ -42,6 +42,12 @@ loading is unsupported because the demo fetches its JSON bundle.
 - `Fullscreen`: enter or leave browser fullscreen.
 - K1/K10/K75 buttons: inspect a frozen batch map without changing the timeline.
 
+The default **System view** follows the spatial playback language used by
+multi-robot SLAM demonstrations: a large common-frame map, colour-coded robot
+trajectories, moving robot markers and accumulating inter-robot constraints.
+The **Analysis** view retains the source-backed SC/GICP accuracy, latency and
+registration diagnostics.
+
 The SC stage now exposes the Rank-1 candidate before any map edge exists; the
 GICP stage then shows the aligned cloud and measured quality against the frozen
 threshold. Accuracy callouts quantify how many protocol false positives GICP

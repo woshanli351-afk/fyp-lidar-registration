@@ -13,7 +13,13 @@
       <span class="brand-mark">CU</span>
       <div><strong>Multi-Robot Progressive Mapping</strong><small>Source-backed offline replay · Robot1 + Robot3</small></div>
     </div>
-    <div class="badges"><span>FROZEN INPUTS</span><span>BATCH SNAPSHOTS</span><span>GT-FREE REPLAY</span></div>
+    <div class="top-actions">
+      <div class="view-switch" aria-label="Demo view">
+        <button id="systemView" class="active">System view</button>
+        <button id="analysisView">Analysis</button>
+      </div>
+      <div class="badges"><span>RECORDED REPLAY</span><span>GT-FREE ONLINE FIELDS</span></div>
+    </div>
   </header>
 
   <nav class="stagebar" aria-label="Replay stages">
@@ -31,7 +37,15 @@
         <div><p class="eyebrow">A · SYSTEM REPLAY</p><h1 id="sceneTitle">Independent local mapping</h1><p id="sceneNote" class="scene-note">Each robot starts in its own local frame.</p></div>
         <div class="legend"><span><i class="r1"></i>Robot1</span><span><i class="r3"></i>Robot3</span><span><i class="loop"></i>Accepted loop</span></div>
       </div>
-      <canvas id="trajectory" width="1120" height="610"></canvas>
+      <div class="trajectory-frame">
+        <canvas id="trajectory" width="1440" height="760"></canvas>
+        <div class="spatial-hud" aria-label="Spatial replay status">
+          <span id="systemPhase">LOCAL MAPPING</span>
+          <div><small>Current event</small><b id="systemEvent">Waiting for inter-robot candidate</b></div>
+          <div><small>Verified bridges</small><b id="systemLoops">0 / 75</b></div>
+          <div><small>Registration quality</small><b id="systemQuality">—</b></div>
+        </div>
+      </div>
       <div class="hero-stats">
         <div><small>Active snapshot</small><b id="snapshotName">LOCAL</b></div>
         <div><small>Accepted constraints</small><b id="loopCount">0 / 75</b></div>
