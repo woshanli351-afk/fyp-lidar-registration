@@ -26,6 +26,12 @@ def validate_demo() -> dict:
         raise SystemExit("Demo data failed validation: expected 10 metric rows and 75 events")
     if bundle.get("metadata", {}).get("transform_direction") != "T_query_from_candidate":
         raise SystemExit("Demo data failed validation: transform direction changed")
+    geospatial = bundle.get("geospatial", {})
+    tracks = geospatial.get("trajectories", {})
+    if set(tracks) != {"robot1", "robot3"} or any(not tracks[robot] for robot in tracks):
+        raise SystemExit("Demo data failed validation: incomplete geospatial tracks")
+    if "not_used_by_scan_context_gicp_or_pose_graph" not in geospatial.get("usage", ""):
+        raise SystemExit("Demo data failed validation: geospatial claim boundary missing")
     return bundle
 
 

@@ -227,6 +227,10 @@ def validate_bundle(bundle: dict) -> None:
     for snapshot, robots in bundle["map_points"].items():
         if set(robots) != {"robot1", "robot3"} or any(not points for points in robots.values()):
             raise ValueError(f"Incomplete map points for {snapshot}")
+    if "geospatial" in bundle:
+        tracks = bundle["geospatial"].get("trajectories", {})
+        if set(tracks) != {"robot1", "robot3"} or any(not tracks[robot] for robot in tracks):
+            raise ValueError("Incomplete geospatial trajectories")
 
 
 def build(team_root: Path, map_root: Path, output: Path) -> None:

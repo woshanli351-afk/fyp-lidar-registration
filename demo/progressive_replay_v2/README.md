@@ -24,6 +24,20 @@ raw PLY files are not copied into the repository. It exports only aggregate
 evaluation metrics and GT-free online event fields, records input hashes, and
 never writes personal source paths into the bundle.
 
+Add the optional, presentation-only satellite overlay from the validated
+keyframe/GNSS audit tables:
+
+```bash
+python scripts/add_geospatial_replay_data.py \
+  --gnss-root /path/to/12c_dataset_stability
+```
+
+The script joins the midpoint of the two valid GNSS antennas by keyframe ID.
+GNSS is used only to draw the reference trajectory over Esri World Imagery; it
+is excluded from Scan Context, GICP acceptance and pose-graph optimisation.
+Satellite tiles require network access and fall back to a dark tile grid when
+unavailable.
+
 ## Run locally
 
 ```bash
@@ -47,6 +61,9 @@ multi-robot SLAM demonstrations: a large common-frame map, colour-coded robot
 trajectories, moving robot markers and accumulating inter-robot constraints.
 The **Analysis** view retains the source-backed SC/GICP accuracy, latency and
 registration diagnostics.
+
+Use the **Satellite / LiDAR** control in System view to switch between the
+dual-GNSS geographic reference and the frozen batch LiDAR snapshots.
 
 The SC stage now exposes the Rank-1 candidate before any map edge exists; the
 GICP stage then shows the aligned cloud and measured quality against the frozen

@@ -7,17 +7,23 @@ const STAGES=[
   {p:.58,title:'Progressive batch fusion',note:'Accepted constraints accumulate through stable K10 batch snapshots.',snap:'K10'},
   {p:.90,title:'Final clean map',note:'All 75 frozen clean loop factors produce the final K75 batch result.',snap:'K75'}
 ];
-let D=null,S={p:0,playing:false,speed:1,mapOverride:null,view:'system'},last=0;
+let D=null,S={p:0,playing:false,speed:1,mapOverride:null,view:'system',mapMode:'satellite'},last=0;
 const $=q=>document.querySelector(q),$$=q=>[...document.querySelectorAll(q)];
+const tileCache=new Map();
 
-fetch('data/demo.json').then(r=>{if(!r.ok)throw new Error(`data/demo.json ${r.status}`);return r.json()}).then(data=>{D=data;const params=new URLSearchParams(location.search),preview=Number(params.get('p'));if(Number.isFinite(preview))S.p=Math.max(0,Math.min(1,preview));if(params.get('view')==='analysis')S.view='analysis';bind();render();requestAnimationFrame(tick)}).catch(error=>{$('#sceneTitle').textContent='Demo data failed to load';console.error(error)});
+fetch('data/demo.json').then(r=>{if(!r.ok)throw new Error(`data/demo.json ${r.status}`);return r.json()}).then(data=>{D=data;const params=new URLSearchParams(location.search),preview=Number(params.get('p'));if(Number.isFinite(preview))S.p=Math.max(0,Math.min(1,preview));if(params.get('view')==='analysis')S.view='analysis';if(params.get('map')==='lidar'||!D.geospatial)S.mapMode='lidar';bind();render();requestAnimationFrame(tick)}).catch(error=>{$('#sceneTitle').textContent='Demo data failed to load';console.error(error)});
 
 function bind(){
   document.body.classList.toggle('system-view',S.view==='system');
   $('#systemView').classList.toggle('active',S.view==='system');
   $('#analysisView').classList.toggle('active',S.view==='analysis');
+  $('#satelliteMode').classList.toggle('active',S.mapMode==='satellite');
+  $('#lidarMode').classList.toggle('active',S.mapMode==='lidar');
+  $('#satelliteMode').disabled=!D.geospatial;
   $('#systemView').onclick=()=>setView('system');
   $('#analysisView').onclick=()=>setView('analysis');
+  $('#satelliteMode').onclick=()=>setMapMode('satellite');
+  $('#lidarMode').onclick=()=>setMapMode('lidar');
   $('#play').onclick=togglePlay;
   $('#reset').onclick=resetReplay;
   $('#fullscreen').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();
@@ -33,6 +39,14 @@ function bind(){
     else if(event.key.toLowerCase()==='r')resetReplay();
     else if(/^[1-6]$/.test(event.key))jumpToStage(Number(event.key)-1);
   });
+}
+
+function setMapMode(mode){
+  if(mode==='satellite'&&!D.geospatial)return;
+  S.mapMode=mode;
+  $('#satelliteMode').classList.toggle('active',mode==='satellite');
+  $('#lidarMode').classList.toggle('active',mode==='lidar');
+  renderTrajectory();
 }
 
 function setView(view){
@@ -84,6 +98,11 @@ function currentTrajectory(){
   return D.trajectories.K75;
 }
 function renderTrajectory(){
+  if(S.mapMode==='satellite'&&D.geospatial){renderSatellite();return}
+  renderLidarTrajectory();
+}
+
+function renderLidarTrajectory(){
   const canvas=$('#trajectory'),ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height,tr=currentTrajectory(),snap=snapshot(),map=snap==='local'?null:D.map_points[snap];
   const boundGroups=[tr];
   if(map)boundGroups.push({robot1:map.robot1.map(p=>[0,p[0],p[1]]),robot3:map.robot3.map(p=>[0,p[0],p[1]])});
@@ -108,6 +127,62 @@ function renderTrajectory(){
   ctx.textAlign='left';
   const event=loops?activeEvent():null;if(event){const q=findPoint(tr,event.query_robot,event.query_keyframe),c=findPoint(tr,event.candidate_robot,event.candidate_keyframe);if(q&&c){for(const p of [xy(q,b,w,h),xy(c,b,w,h)]){ctx.fillStyle=COLORS.green;ctx.beginPath();ctx.arc(p[0],p[1],6,0,Math.PI*2);ctx.fill()}}}
   ctx.fillStyle='#9bb4ca';ctx.font='14px system-ui';ctx.fillText(`${snap.toUpperCase()} · ${loops} verified inter-robot constraints`,18,27);ctx.fillStyle='#607d96';ctx.font='11px ui-monospace,monospace';ctx.fillText(loops?'WORLD / COMMON FRAME':'ROBOT1 LOCAL + ROBOT3 LOCAL FRAMES',18,h-18);
+}
+
+function mercatorPoint(lat,lon,zoom){
+  const scale=256*2**zoom,x=(lon+180)/360*scale,sine=Math.sin(lat*Math.PI/180),y=(.5-Math.log((1+sine)/(1-sine))/(4*Math.PI))*scale;
+  return[x,y];
+}
+function satelliteProjection(w,h){
+  const all=Object.values(D.geospatial.trajectories).flat(),bounds=D.geospatial.bounds;
+  let zoom=13,minx,maxx,miny,maxy;
+  for(let candidate=20;candidate>=13;candidate--){
+    const nw=mercatorPoint(bounds.north,bounds.west,candidate),se=mercatorPoint(bounds.south,bounds.east,candidate);
+    [minx,miny,maxx,maxy]=[nw[0],nw[1],se[0],se[1]];
+    if(maxx-minx<w-180&&maxy-miny<h-120){zoom=candidate;break}
+  }
+  const center=[(minx+maxx)/2,(miny+maxy)/2],offset=[w/2-center[0],h/2-center[1]];
+  return{zoom,offset,center,all,toCanvas(point){const p=mercatorPoint(point[1],point[2],zoom);return[p[0]+offset[0],p[1]+offset[1]]}};
+}
+function requestTile(zoom,x,y){
+  const key=`${zoom}/${x}/${y}`;if(tileCache.has(key))return tileCache.get(key);
+  const entry={status:'loading',image:new Image()};tileCache.set(key,entry);
+  entry.image.onload=()=>{entry.status='ready';if(S.mapMode==='satellite')renderSatellite()};
+  entry.image.onerror=()=>entry.status='error';
+  entry.image.src=`https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zoom}/${y}/${x}`;
+  return entry;
+}
+function findGeoPoint(robot,keyframe){
+  const list=D.geospatial.trajectories[robot];let best=list[0],distance=Infinity;
+  for(const point of list){const d=Math.abs(point[0]-keyframe);if(d<distance){best=point;distance=d}}
+  return best;
+}
+function renderSatellite(){
+  const canvas=$('#trajectory'),ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height,projection=satelliteProjection(w,h),z=projection.zoom,ox=projection.offset[0],oy=projection.offset[1];
+  ctx.clearRect(0,0,w,h);ctx.fillStyle='#07111e';ctx.fillRect(0,0,w,h);
+  const firstX=Math.floor(-ox/256)-1,lastX=Math.floor((w-ox)/256)+1,firstY=Math.floor(-oy/256)-1,lastY=Math.floor((h-oy)/256)+1,maxTile=2**z;
+  for(let x=firstX;x<=lastX;x++)for(let y=firstY;y<=lastY;y++){
+    if(y<0||y>=maxTile)continue;const wrapped=((x%maxTile)+maxTile)%maxTile,entry=requestTile(z,wrapped,y),dx=x*256+ox,dy=y*256+oy;
+    if(entry.status==='ready')ctx.drawImage(entry.image,dx,dy,256,256);else{ctx.fillStyle=(x+y)%2?'#12283a':'#0e2233';ctx.fillRect(dx,dy,256,256)}
+  }
+  ctx.fillStyle='rgba(2,9,16,.28)';ctx.fillRect(0,0,w,h);
+  const travel=Math.min(1,S.p/.2),loops=loopProgress();
+  for(let i=0;i<loops;i++){
+    const event=D.events[i],a=projection.toCanvas(findGeoPoint(event.query_robot,event.query_keyframe)),b=projection.toCanvas(findGeoPoint(event.candidate_robot,event.candidate_keyframe));
+    ctx.strokeStyle=i===loops-1?COLORS.green:'rgba(62,230,168,.25)';ctx.lineWidth=i===loops-1?2.5:1;ctx.setLineDash(i===loops-1?[7,5]:[]);ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...b);ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  for(const robot of ['robot1','robot3']){
+    const points=D.geospatial.trajectories[robot],color=robot==='robot1'?COLORS.r1:COLORS.r3,visibleCount=Math.max(1,Math.ceil(points.length*travel)),visible=points.slice(0,visibleCount);
+    ctx.strokeStyle='rgba(3,9,16,.82)';ctx.lineWidth=8;ctx.lineJoin='round';ctx.beginPath();visible.forEach((point,index)=>{const p=projection.toCanvas(point);index?ctx.lineTo(...p):ctx.moveTo(...p)});ctx.stroke();
+    ctx.strokeStyle=color;ctx.lineWidth=4;ctx.beginPath();visible.forEach((point,index)=>{const p=projection.toCanvas(point);index?ctx.lineTo(...p):ctx.moveTo(...p)});ctx.stroke();
+    const marker=projection.toCanvas(visible[visible.length-1]);ctx.fillStyle=color;ctx.shadowColor=color;ctx.shadowBlur=18;ctx.beginPath();ctx.arc(marker[0],marker[1],10,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='#06101d';ctx.font='bold 10px system-ui';ctx.textAlign='center';ctx.fillText(robot==='robot1'?'R1':'R3',marker[0],marker[1]+3.5);
+  }
+  ctx.textAlign='left';
+  if(loops){const event=activeEvent();for(const point of [findGeoPoint(event.query_robot,event.query_keyframe),findGeoPoint(event.candidate_robot,event.candidate_keyframe)]){const p=projection.toCanvas(point);ctx.fillStyle=COLORS.green;ctx.beginPath();ctx.arc(p[0],p[1],6,0,Math.PI*2);ctx.fill()}}
+  ctx.fillStyle='rgba(3,10,18,.78)';ctx.fillRect(12,12,340,47);ctx.fillStyle='#dcebf7';ctx.font='bold 14px system-ui';ctx.fillText(`GNSS REFERENCE · ${loops} verified inter-robot constraints`,24,33);ctx.fillStyle='#91a9bd';ctx.font='10px system-ui';ctx.fillText('Visualization only · excluded from SC, GICP and pose-graph decisions',24,49);
+  const centerLat=(D.geospatial.bounds.north+D.geospatial.bounds.south)/2,metersPerPixel=Math.cos(centerLat*Math.PI/180)*2*Math.PI*6378137/(256*2**z),barMeters=100,barPixels=barMeters/metersPerPixel;
+  ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(24,h-34);ctx.lineTo(24+barPixels,h-34);ctx.stroke();ctx.fillStyle='#fff';ctx.font='10px system-ui';ctx.fillText(`${barMeters} m`,24,h-42);ctx.textAlign='right';ctx.fillText('Tiles © Esri · dual-GNSS midpoint overlay',w-18,h-18);ctx.textAlign='left';
 }
 function findPoint(tr,robot,keyframe){const list=tr[robot];if(!list)return null;let best=list[0],distance=Infinity;for(const point of list){const d=Math.abs(point[0]-keyframe);if(d<distance){best=point;distance=d}}return best}
 

@@ -35,7 +35,13 @@
     <section class="panel hero">
       <div class="panel-head">
         <div><p class="eyebrow">A · SYSTEM REPLAY</p><h1 id="sceneTitle">Independent local mapping</h1><p id="sceneNote" class="scene-note">Each robot starts in its own local frame.</p></div>
-        <div class="legend"><span><i class="r1"></i>Robot1</span><span><i class="r3"></i>Robot3</span><span><i class="loop"></i>Accepted loop</span></div>
+        <div class="hero-actions">
+          <div class="map-mode-switch" aria-label="Spatial map mode">
+            <button id="satelliteMode" class="active">Satellite</button>
+            <button id="lidarMode">LiDAR</button>
+          </div>
+          <div class="legend"><span><i class="r1"></i>Robot1</span><span><i class="r3"></i>Robot3</span><span><i class="loop"></i>Accepted loop</span></div>
+        </div>
       </div>
       <div class="trajectory-frame">
         <canvas id="trajectory" width="1440" height="760"></canvas>
