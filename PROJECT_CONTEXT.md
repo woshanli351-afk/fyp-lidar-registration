@@ -17,6 +17,9 @@
 - 完整注册/评价 CSV 留在研究归档，不随 Git 发布。公开 JSON 中机器路径使用占位符，数值保持原样。
 - 报告推荐 Rank-1 GICP 默认策略；Top-3 保留离线恢复，SC score gate 仅用于地点识别。
 - CU-Multi PGO 仍需独立验证。本仓库尚无已验收的实时地图拼接前后端。
+- Robot1/Robot3 数据质量复核确认完整运行的 EKF 启动段不可用于建图：
+  Robot1/Robot3 最大相邻 XY 跳变为 291.454/333.575 m。当前离线链路必须
+  使用冻结起点 Robot1 KF150、Robot3 KF234，并保留后段协方差与航向告警。
 - 已增加渐进式离线 Demo V2：准确率/效率面板读取 Stage 11 汇总，地图
   重放使用团队仓库 Stage 12D/13A 的稳定片段 batch K1/K10/K75 结果。
   Demo 不将 Stage 13B iSAM2 描述为已验收在线系统。

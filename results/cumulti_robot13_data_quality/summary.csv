@@ -1,0 +1,3 @@
+robot,keyframes,duration_s,keyframe_id_duplicates,timestamp_duplicates,steps_over_5m,max_xy_step_m,stable_start_keyframe,stable_start_s,retained_keyframes,retained_fraction,post_start_max_xy_step_m,ordinary_rotation_exceedances,major_rotation_exceedances,ordinary_covariance_exceedances,major_covariance_exceedances,ekf_out_of_window,imu_out_of_window,gnss_out_of_window
+robot1,2000,999.535028,0,0,13,291.454131,150,75.034256,1850,0.925000,1.127652,65,0,166,1,1,4,0
+robot3,4180,2089.511054,0,0,19,333.575201,234,117.003184,3946,0.944019,1.470416,113,0,543,3,0,2,0

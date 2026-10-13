@@ -11,8 +11,9 @@ CU-Multi 依赖模块来自团队代码，具体来源见 [代码来源](docs/PR
 
 1. [项目现状与 AI 上下文](PROJECT_CONTEXT.md)
 2. [最新 GICP 作用与性价比报告](docs/CUMULTI_STAGE11_GICP_VALUE_STUDY.md)
-3. [运行指南](docs/RUNNING.md) 与 [候选/配准接口](docs/INTERFACES.md)
-4. [下一步](NEXT_STEPS.md) 与 [更新记录](CHANGELOG.md)
+3. [Robot1/Robot3 数据质量评估](docs/CUMULTI_ROBOT13_DATA_QUALITY_ASSESSMENT.md)
+4. [运行指南](docs/RUNNING.md) 与 [候选/配准接口](docs/INTERFACES.md)
+5. [下一步](NEXT_STEPS.md) 与 [更新记录](CHANGELOG.md)
 
 ## 已有结果
 
