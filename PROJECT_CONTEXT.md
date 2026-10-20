@@ -1,6 +1,6 @@
 # 项目上下文
 
-更新时间：2026-10-12。
+更新时间：2026-10-20。
 
 ## 目的与分工
 
@@ -23,6 +23,9 @@
 - 已增加渐进式离线 Demo V2：准确率/效率面板读取 Stage 11 汇总，地图
   重放使用团队仓库 Stage 12D/13A 的稳定片段 batch K1/K10/K75 结果。
   Demo 不将 Stage 13B iSAM2 描述为已验收在线系统。
+- 已增加 `docs/HANDOFF.md`，集中记录当前结论、Demo 操作、数据使用边界、
+  外部数据交接规则和校园试采的最小设备/验收流程。下一阶段先确认实际
+  LiDAR、IMU、时钟与外参条件，再决定 LIO 和大规模采集方案。
 
 ## 冻结条件
 
@@ -33,7 +36,7 @@ Robot2→Robot3（2,230 查询）与 Robot3→Robot2（4,180 查询）为 held-o
 
 ## AI 恢复工作顺序
 
-先读 README、NEXT_STEPS、CHANGELOG、docs/INTERFACES，再查最新 commit。
+先读 README、docs/HANDOFF、NEXT_STEPS、CHANGELOG、docs/INTERFACES，再查最新 commit。
 读取报告中的统计时区分 query/pair/event、protocol FP 与 mapping hazard。
 在线 manifest/GICP 输出无 GT；离线评价决策含 GT 字段，不能直接作为线上接口使用。
 每次修改记录相关测试及未能完成的真实数据验证，并提交、推送该任务变更。
