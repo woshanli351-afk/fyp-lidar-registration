@@ -1,0 +1,55 @@
+{
+  "experiment": "Stage12D free Pose3 replay versus EKF-gravity-preserving diagnostic",
+  "date": "2026-11-10",
+  "upstream_source": "https://github.com/James-5757/fyp-place-recognition/blob/main/src/cumulti/run_stage12d_clean_backend.py",
+  "upstream_blob_sha": "3857ca3734c35a6d8bd691cc9da7d625a83f9666",
+  "input_sha256": {
+    "clean_local_trajectory.csv": "64f917ce4282f7d69909f89e8c2225d637e52f66596a97c5c0c47be4fce97297",
+    "ordered_rank1_clean_loops.csv": "69c4ed4c744392edba309b92a5b84abc9b34aa4200c37542d56881a0f114d44e",
+    "clean_all75_gtsam_trajectory.csv": "6093963a1b47b98ca3219ae05cb34d6976cd3d51984fbda065a46032bf514937"
+  },
+  "graph": {
+    "nodes": 5796,
+    "odometry_factors": 5794,
+    "loop_factors": 75,
+    "anchor_priors": 1,
+    "gravity_factors_in_diagnostic": 5795
+  },
+  "free_pose3_reproduction": {
+    "maximum_translation_difference_m": 4.736215982111108e-09,
+    "maximum_rotation_difference_deg": 8.388931710090677e-10,
+    "same_frame_no_alignment": true
+  },
+  "metrics": {
+    "free_pose3_replay": {
+      "common_up_p95_deg": 12.799620425691124,
+      "ekf_gravity_deviation_p95_deg": 12.678163814449777,
+      "loop_translation_residual_p95_m": 0.19620215705400165,
+      "loop_rotation_residual_p95_deg": 1.3839348405339642,
+      "new_adjacent_steps_over_5m": 0,
+      "maximum_adjacent_translation_m": 1.7071047382508497,
+      "LM_iterations": 7,
+      "runtime_s_representative": 0.4072558330371976
+    },
+    "ekf_gravity_hard_diagnostic": {
+      "common_up_p95_deg": 0.35237043082591946,
+      "ekf_gravity_deviation_p95_deg": 0.0,
+      "ekf_gravity_deviation_max_deg": 1.0316186218701491e-05,
+      "loop_translation_residual_p95_m": 0.19402415964679653,
+      "loop_rotation_residual_p95_deg": 1.6826050242012813,
+      "new_adjacent_steps_over_5m": 0,
+      "maximum_adjacent_translation_m": 1.702403450485989,
+      "LM_iterations": 7,
+      "runtime_s_representative": 62.76256262487732
+    }
+  },
+  "pre_GT_decision": "DIAGNOSTIC_CRITERIA_PASS",
+  "GT_used": false,
+  "limitations": [
+    "No offline GT metrics were read or computed in this phase.",
+    "No point-cloud map consistency metric was computed in this phase.",
+    "The 0.01 degree gravity factor is a hard diagnostic bound, not a covariance-derived production model.",
+    "The Python CustomFactor implementation is diagnostic and needs a native factor before online use.",
+    "Raw graph objective values are not comparable across variants with different factor sets."
+  ]
+}

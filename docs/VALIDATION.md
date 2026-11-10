@@ -21,11 +21,17 @@
 未执行：全量 KITTI/CU-Multi 重跑、真实 Open3D 配准、GPU CVTNet 推理、PGO 收敛、地图融合 Demo。
 公开历史指标来自原研究归档；原服务器验收见 `results/cumulti_stage11/VALIDATION_REPORT.txt`。
 
+> 上段是 2026-09-23 首次发布时的历史状态。2026-11-10 已补做完整
+> 5796 节点 batch PGO 的 GT-free 重放与重力保持诊断，并通过 6 个新增
+> 单元测试；离线 GT、点云地图精度及增量 PGO 仍未执行。详见
+> `docs/CUMULTI_PGO_GRAVITY_VALIDATION.md`。
+
 复查命令：
 
 ```bash
 python -m unittest discover -s src/kitti -p test_pipeline.py -v
 python -m unittest discover -s src/cumulti -p test_stage11_gicp_value.py -v
+python -m unittest discover -s src/cumulti -p test_pgo_gravity_validation.py -v
 python src/cumulti/gicp_value_backend.py --help
 python src/cumulti/run_stage11_gicp_value_study.py --help
 python src/cumulti/run_stage11_latency.py --help
