@@ -1,0 +1,40 @@
+{
+  "date": "2026-11-11",
+  "current_graph": {
+    "nodes": 5796,
+    "loops": 75,
+    "starts": {
+      "robot1": 150,
+      "robot3": 234
+    }
+  },
+  "frozen_current_trajectory_sha256": {
+    "free_pose3_replay": "88b87c4d36358125d3627654d89a153b222b8584bc0376fef32550011d43931a",
+    "ekf_gravity_hard_diagnostic": "fa4d8535423bd88ad0bea406fa29510e3a46fec5493b6f04008ff87e0cede207",
+    "pre_gt_decision": "5fd79e2075f2267d09f11660de49d89a381ba7f314a450dfdc0e00004ec979e6"
+  },
+  "available_upstream_free_baseline": {
+    "source_metrics_sha256": "22a41b2340e4e048baee5b0b217487260d38b01f3414c6cf874db347199aef0a",
+    "source_map_sha256": "32f2877cd4f0e3115bc45e90cde4810bef8e64826b97343de3eb6ea51944078d",
+    "joint_ATE_RMSE_m": 19.607957,
+    "robot1_scoped_ATE_RMSE_m": 12.108315,
+    "robot3_scoped_ATE_RMSE_m": 22.270788,
+    "combined_RPE_translation_RMSE_m": 10.540927,
+    "combined_RPE_rotation_RMSE_deg": 7.521674,
+    "map_NN_median_m": 3.030506,
+    "map_NN_p95_m": 119.277542
+  },
+  "current_gravity_offline_metrics": null,
+  "status": "WAITING_FOR_EXPLICITLY_AUTHORIZED_GT_AND_POINT_CLOUD_INPUTS",
+  "missing_local_inputs": [
+    "robot1/keyframes.csv with GT and lidar_file columns",
+    "robot3/keyframes.csv with GT and lidar_file columns",
+    "robot1/lidar/*.npy for map evaluation",
+    "robot3/lidar/*.npy for map evaluation"
+  ],
+  "historical_non_transferable_result": {
+    "joint_ATE_RMSE_m": 14.155061249938353,
+    "reason": "Different 6003-node/88-loop graph with Robot1 KF91 and Robot3 KF86 starts"
+  },
+  "GT_used_for_current_gravity_trajectory": false
+}

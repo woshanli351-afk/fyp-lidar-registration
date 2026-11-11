@@ -1,6 +1,6 @@
 # 项目上下文
 
-更新时间：2026-11-10。
+更新时间：2026-11-11。
 
 ## 目的与分工
 
@@ -31,6 +31,10 @@
   LiDAR、IMU、时钟与外参条件，再决定 LIO 和大规模采集方案。
 - 新增 `src/cumulti/run_pgo_gravity_validation.py`，固定读取 Stage 12D 导出，
   在求解前冻结输入哈希和 GT-free 判定，并输出自由/重力保持两条完整轨迹。
+- 新增独立 offline evaluator，固定在 pre-GT 决定之后计算 joint/scoped/
+  independent ATE、10-keyframe RPE 和点云地图 NN，并强制自由分支复现上游
+  汇总。当前本地缺少 GT-bearing keyframes 与原始点云，因此重力分支的
+  实际离线指标尚未生成；历史 6003 节点/88 回环结果不得替代当前图。
 
 ## 冻结条件
 

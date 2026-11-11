@@ -13,9 +13,10 @@ CU-Multi 依赖模块来自团队代码，具体来源见 [代码来源](docs/PR
 2. [项目现状与 AI 上下文](PROJECT_CONTEXT.md)
 3. [最新 GICP 作用与性价比报告](docs/CUMULTI_STAGE11_GICP_VALUE_STUDY.md)
 4. [PGO 重力保持诊断](docs/CUMULTI_PGO_GRAVITY_VALIDATION.md)
-5. [Robot1/Robot3 数据质量评估](docs/CUMULTI_ROBOT13_DATA_QUALITY_ASSESSMENT.md)
-6. [运行指南](docs/RUNNING.md) 与 [候选/配准接口](docs/INTERFACES.md)
-7. [下一步](NEXT_STEPS.md) 与 [更新记录](CHANGELOG.md)
+5. [PGO 离线精度评价状态](docs/CUMULTI_PGO_OFFLINE_EVALUATION.md)
+6. [Robot1/Robot3 数据质量评估](docs/CUMULTI_ROBOT13_DATA_QUALITY_ASSESSMENT.md)
+7. [运行指南](docs/RUNNING.md) 与 [候选/配准接口](docs/INTERFACES.md)
+8. [下一步](NEXT_STEPS.md) 与 [更新记录](CHANGELOG.md)
 
 ## 已有结果
 

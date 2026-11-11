@@ -23,7 +23,8 @@
 
 > 上段是 2026-09-23 首次发布时的历史状态。2026-11-10 已补做完整
 > 5796 节点 batch PGO 的 GT-free 重放与重力保持诊断，并通过 6 个新增
-> 单元测试；离线 GT、点云地图精度及增量 PGO 仍未执行。详见
+> 单元测试；2026-11-11 又增加 6 个 offline evaluator 测试。当前重力轨迹的
+> 离线 GT、点云地图精度及增量 PGO 仍未执行。详见
 > `docs/CUMULTI_PGO_GRAVITY_VALIDATION.md`。
 
 复查命令：
@@ -32,6 +33,7 @@
 python -m unittest discover -s src/kitti -p test_pipeline.py -v
 python -m unittest discover -s src/cumulti -p test_stage11_gicp_value.py -v
 python -m unittest discover -s src/cumulti -p test_pgo_gravity_validation.py -v
+python -m unittest discover -s src/cumulti -p test_pgo_gravity_offline.py -v
 python src/cumulti/gicp_value_backend.py --help
 python src/cumulti/run_stage11_gicp_value_study.py --help
 python src/cumulti/run_stage11_latency.py --help

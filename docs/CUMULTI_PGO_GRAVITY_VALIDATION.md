@@ -72,6 +72,10 @@ ATE、每机器人 ATE、固定间隔 RPE、跨机器人地图 NN median/p95，�
 Robot3 原先的 ATE 恶化是否缓解。若结果一致，再把硬因子替换为由 IMU/EKF
 姿态协方差支持的软重力因子，并做灵敏度与 batch/iSAM2 一致性实验。
 
+2026-11-11 已加入独立评价器，详见 `CUMULTI_PGO_OFFLINE_EVALUATION.md`。
+本地缺少当前图的逐帧 GT-bearing keyframes 和点云，尚未生成硬重力轨迹的
+ATE/RPE/地图指标；历史 88 回环实验不能替代本次 75 回环评价。
+
 ## 复现
 
 GTSAM 4.2 的 macOS Python wheel 需要 NumPy 1.x；使用 Python 3.10：
