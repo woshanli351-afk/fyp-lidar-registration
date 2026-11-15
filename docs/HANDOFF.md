@@ -1,6 +1,6 @@
 # FYP 项目交接文档
 
-更新时间：2026-10-20。
+更新时间：2026-11-15。
 
 本文用于在聊天记录缺失时恢复项目状态。接手人应先阅读本页，再按文中链接查看证据和运行说明。
 
@@ -29,10 +29,11 @@
 | Rank-1/Top-3/选择性策略 | 已比较 | Rank-1 GICP 为默认；Top-3 仅作离线或失败恢复；选择性策略不作为统一默认。 |
 | Robot1/Robot3 数据质量 | 已完成专项复核 | 完整 EKF 启动段不可用于建图；必须使用冻结稳定起点。 |
 | Progressive Demo V2 | 已完成并可本地运行 | 是使用冻结结果的静态离线重放，不是浏览器内实时运行 SC/GICP/PGO。 |
-| CU-Multi batch PGO | GT-free 诊断已完成 | 自由 Stage 12D 已精确复现，重力保持方向有效；离线 GT、点云地图和增量后端仍未验收。 |
+| CU-Multi batch PGO | GT-free 与离线评价已完成 | 硬重力约束改善 ATE，但地图 NN p90/p95 恶化；只保留为诊断上界，增量后端仍未验收。 |
 | 校园自主采集 | 尚未开始 | 下一步先确认 LiDAR/IMU 型号、记录字段和时间同步，再做小规模试采。 |
 
-本文建立时，本仓库上一项已验收工作为提交 `a72d660`（Robot1/Robot3 数据质量评估）。后续接手时以远端最新提交为准，不要把该哈希当作永久版本号。
+本文已同步至 2026-11-15 的 Gravity 离线评价状态。后续接手时仍以远端最新
+提交为准，并通过 `CHANGELOG.md` 和冻结状态 JSON 核对具体实验版本。
 
 ## 3. 冻结的 SC/GICP 结论
 
@@ -153,8 +154,10 @@ Demo 由本机 HTTP 服务提供。`127.0.0.1` 只能被运行服务的电脑访
 
 ```bash
 python -m unittest discover -s src/cumulti -p test_stage11_gicp_value.py -v
+python -m unittest discover -s src/cumulti -p test_pgo_gravity_offline.py -v
 python src/cumulti/gicp_value_backend.py --help
 python src/cumulti/run_stage11_gicp_value_study.py --help
+MPLBACKEND=Agg python scripts/render_pgo_gravity_offline_figure.py
 python scripts/serve_progressive_demo.py --no-browser
 ```
 
@@ -172,9 +175,10 @@ python scripts/serve_progressive_demo.py --no-browser
 
 优先级从高到低：
 
-1. **PGO 后续验收：** batch 收敛、变换方向、鲁棒核和重力失效模式已完成
-   GT-free 检查；下一步补 joint/per-robot ATE、RPE、点云地图一致性及
-   batch/incremental 数值一致性。当前仍不能把 Demo 地图当作全局精度证明。
+1. **PGO 软重力与增量验收：** hard-gravity 已完成 GT-free、ATE/RPE 和点云
+   地图评价；ATE 改善但地图 NN p90/p95 恶化。下一步用 IMU/EKF 协方差设计
+   软因子，并要求地图尾部不恶化，再做 batch/incremental 数值一致性。
+   当前仍不能把 Demo 地图当作全局精度证明。
 2. **Robot1/Robot3 传感器根因：** 取得采集时 MicroStrain 消息定义、启动配置和 map/earth TF，解码异常窗口的 EKF、双天线与 filter 状态。
 3. **团队集成：** 对齐候选 ID、时间戳、点云帧和 `T_query_from_candidate`，再重放冻结 Rank-1 GICP 边。
 4. **校园试采：** 用自有设备完成小规模数据记录、LIO 和重复路线闭环验证。
@@ -232,7 +236,7 @@ python scripts/serve_progressive_demo.py --no-browser
 - [ ] 已在本地启动并完整走一遍 Demo；
 - [ ] 已理解 Robot1 KF150 / Robot3 KF234 的冻结裁剪规则；
 - [ ] 已把 PGO 验收与 SC/GICP 精度结论分开；
-- [ ] 已阅读 PGO 重力诊断，并区分 GT-free 失效模式定位与离线精度验收；
+- [ ] 已阅读 PGO 重力诊断与离线评价，并理解 ATE 改善不等于地图尾部改善；
 - [ ] 开始校园采集前已确认 LiDAR、IMU、时钟与外参方案。
 
 任何新实验都应保存配置、输入 commit、文件哈希、运行命令和指标摘要；完成后更新本页相关状态、`PROJECT_CONTEXT.md`、`NEXT_STEPS.md` 和 `CHANGELOG.md`，再提交并推送。

@@ -1,5 +1,18 @@
 # 更新记录
 
+## 2026-11-15 — PGO Gravity 离线 GT 与地图评价
+
+- 在冻结的 5796 节点/75 回环图上完成 hard-gravity 分支的 joint/scoped/
+  independent ATE、10-keyframe RPE 和点云地图双向 NN 评价。
+- 自由分支 GT 与地图指标均在 `1e-6` 容差内复现 Stage 12D；求解器、回环、
+  阈值和 pre-GT 决定没有重跑或改动。
+- hard-gravity 将 joint ATE RMSE 从 19.608 m 降到 13.737 m，Robot3 scoped
+  ATE 从 22.271 m 降到 15.798 m；combined RPE 基本不变。
+- 地图 NN median 从 3.031 m 轻微降到 3.016 m，但 p90/p95 分别恶化 8.91%/
+  4.98%。因此只保留为诊断上界，下一步是带协方差的软重力因子和地图尾部门槛。
+- 发布聚合 CSV、冻结哈希、状态 JSON 和论文主图；原始 GT、点云、逐帧轨迹、
+  服务器路径和凭据不进入 Git。
+
 ## 2026-11-11 — PGO 离线评价器与数据边界
 
 - 新增与求解器隔离的 offline evaluator，支持 joint/scoped/independent ATE、

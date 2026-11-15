@@ -1,6 +1,7 @@
 # CU-Multi PGO 重力保持诊断
 
-日期：2026-11-10。状态：GT-free batch 诊断完成；离线 GT 与点云地图评价待做。
+日期：2026-11-15。状态：GT-free batch 诊断与离线 GT/点云地图评价均已完成；
+硬重力因子保留为诊断上界，不作为最终后端。
 
 ## 问题
 
@@ -62,19 +63,40 @@ e(X) = R_X u_sensor - u_first-loop-initialized
 当前重力因子由 Python `CustomFactor` 回调实现，完整图约慢两个数量级；若进入
 在线或重复实验，应改写为 C++/原生 GTSAM factor，再重新测量运行成本。
 
+## 冻结后的离线 GT 与地图评价
+
+在上述 pre-GT 决定和两条轨迹完全冻结后，独立评价器读取原 Stage 12D
+processed keyframes 和点云。自由分支必须先在 `1e-6` 容差内复现上游
+GT/地图汇总，否则评价停止；本次两个复现检查均通过。
+
+| 指标 | 自由 Pose3 | 硬重力诊断 |
+| --- | ---: | ---: |
+| joint ATE RMSE | 19.608 m | **13.737 m** |
+| joint ATE p95 | 39.635 m | **24.327 m** |
+| Robot1 scoped ATE RMSE | 12.108 m | **7.674 m** |
+| Robot3 scoped ATE RMSE | 22.271 m | **15.798 m** |
+| combined RPE translation RMSE | 10.5409 m | 10.5411 m |
+| combined RPE rotation RMSE | 7.522° | **7.496°** |
+| map NN median | 3.031 m | **3.016 m** |
+| map NN p90 | **92.693 m** | 100.950 m |
+| map NN p95 | **119.278 m** | 125.215 m |
+
+硬重力使 joint ATE RMSE 降低 29.94%，Robot3 scoped ATE 降低 29.06%，
+但地图 NN p90/p95 分别恶化 8.91%/4.98%。这说明限制错误 roll/pitch 能改善
+全局轨迹与 GT 的一致性，却不足以保证跨机器人点云尾部重叠更好。可能原因
+包括局部回环姿态与固定重力的小冲突、硬约束过强，以及地图 NN 对少量远端
+错位的高敏感性；这些是后续软因子实验要区分的假设，不是本轮已证明的因果结论。
+
 ## 结论边界与下一步
 
-这次通过的是 **GT-free 数值诊断**，不是全局地图精度验收。不同因子集合的
-原始图目标值不能直接横向比较；也不能仅凭回环残差断言地图更准。
+GT-free 诊断和离线 GT 评价共同支持“自由 6DoF 倾斜是一个真实失效模式”，
+但地图尾部指标否定了“硬重力已经解决地图拼接”的更强结论。不同因子集合的
+原始图目标值仍不能直接横向比较，也不能仅凭 ATE 或回环残差断言地图更准。
 
-下一步应在不改当前判定的前提下进行离线 GT 与点云地图评价：比较 joint
-ATE、每机器人 ATE、固定间隔 RPE、跨机器人地图 NN median/p95，并检查
-Robot3 原先的 ATE 恶化是否缓解。若结果一致，再把硬因子替换为由 IMU/EKF
-姿态协方差支持的软重力因子，并做灵敏度与 batch/iSAM2 一致性实验。
-
-2026-11-11 已加入独立评价器，详见 `CUMULTI_PGO_OFFLINE_EVALUATION.md`。
-本地缺少当前图的逐帧 GT-bearing keyframes 和点云，尚未生成硬重力轨迹的
-ATE/RPE/地图指标；历史 88 回环实验不能替代本次 75 回环评价。
+下一步应把硬因子替换为由 IMU/EKF 姿态协方差支持的软重力因子，并预先冻结
+有限灵敏度范围。采用门槛必须同时要求 joint/Robot3 ATE 改善、固定间隔 RPE
+不恶化、地图 NN p90/p95 不恶化；通过后再做原生因子和 batch/iSAM2 一致性。
+完整评价协议与公开聚合结果见 `CUMULTI_PGO_OFFLINE_EVALUATION.md`。
 
 ## 复现
 

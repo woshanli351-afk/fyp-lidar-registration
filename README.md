@@ -32,11 +32,15 @@ Stage 11 原始实验完成于 2026-09-23，当前发布只整理代码和历史
 且该结果不代表位姿图或地图融合已经验收成功。SC 直接接受不能提供米制相对变换。
 完整定义与限制以报告及原始指标列为准。
 
-2026-11-10 完成同一冻结图上的独立 PGO 诊断：自由 Pose3 分支逐节点精确
-复现团队 Stage 12D；增加 EKF up-vector 因子后，公共重力方向偏差 p95 从
-12.800° 降至 0.352°，回环平移残差 p95 保持约 0.19 m，且无新增 >5 m
-相邻跳变。这支持自由 6DoF 倾斜是当前后端失效模式之一，但尚未完成离线
-GT 和点云地图评价，不能据此声称全局地图精度已验收。
+2026-11-15 完成同一冻结图上的独立 PGO 诊断与离线评价：自由 Pose3 分支
+逐节点精确复现团队 Stage 12D；增加 EKF up-vector 硬因子后，公共重力方向
+偏差 p95 从 12.800° 降至 0.352°，joint ATE RMSE 从 19.608 m 降至
+13.737 m，Robot3 scoped ATE 从 22.271 m 降至 15.798 m。固定间隔 RPE
+基本不变，但跨机器人地图 NN p95 从 119.278 m 上升到 125.215 m。因此硬重力
+约束仍是诊断上界，不是已经验收的最终后端；下一步应测试协方差支持的软因子，
+并把地图尾部不恶化作为采用门槛。
+
+![PGO gravity offline comparison](results/cumulti_pgo_gravity_validation/offline_gt_map_comparison.png)
 
 KITTI CVTNet 使用公开 NCLT checkpoint 做跨数据集迁移；它没有提升 KITTI Top-1 检索结果。
 参见 [CVTNet 历史实验](results/kitti/cvtnet/experiment_summary.md)。

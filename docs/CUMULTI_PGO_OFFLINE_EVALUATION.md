@@ -1,7 +1,7 @@
 # CU-Multi PGO 离线精度评价状态
 
-日期：2026-11-11。状态：评价代码与测试完成；当前 75 回环重力保持轨迹的
-真实 GT/点云评价等待原始 processed 数据。
+日期：2026-11-15。状态：当前 75 回环自由/重力保持轨迹的真实 GT 与点云
+地图评价已完成；自由 Stage 12D 基线复现通过。
 
 ## 为什么不能直接复用历史结果
 
@@ -10,22 +10,33 @@
 之后的 5796 节点、75 回环 Stage 12D 图。两者节点、回环集合和初始化均不同，
 所以历史硬重力 ATE `14.155 m` 不能作为当前结果。
 
-## 当前可确认的自由基线
+## 离线 GT 与地图结果
 
-本地 Stage 12D 归档保存了自由 Pose3 的离线汇总，但没有逐帧 GT 和点云：
+评价读取 Robot1 KF150 之后 1850 个节点、Robot3 KF234 之后 3946 个节点，
+两分支共用同一 5796 节点/75 回环图。求解、参数和 pre-GT 选择均未重跑。
 
-| 指标 | 自由 Stage 12D |
-| --- | ---: |
-| joint ATE RMSE | 19.608 m |
-| Robot1 ATE（joint alignment 下） | 12.108 m |
-| Robot3 ATE（joint alignment 下） | 22.271 m |
-| combined 10-keyframe RPE translation RMSE | 10.541 m |
-| combined 10-keyframe RPE rotation RMSE | 7.522° |
-| 跨机器人地图 NN median | 3.031 m |
-| 跨机器人地图 NN p95 | 119.278 m |
+| 指标 | 自由 Pose3 | 硬重力诊断 | 相对变化 |
+| --- | ---: | ---: | ---: |
+| joint ATE RMSE | 19.608 m | **13.737 m** | **-29.94%** |
+| joint ATE p95 | 39.635 m | **24.327 m** | **-38.62%** |
+| Robot1 scoped ATE RMSE | 12.108 m | **7.674 m** | **-36.62%** |
+| Robot3 scoped ATE RMSE | 22.271 m | **15.798 m** | **-29.06%** |
+| combined RPE translation RMSE | 10.5409 m | 10.5411 m | +0.002% |
+| combined RPE rotation RMSE | 7.522° | 7.496° | -0.34% |
 
-这些是上游既有自由基线，不是本轮新计算的重力保持结果。当前硬重力轨迹
-已经冻结，但只凭上述汇总无法推导其 ATE、RPE 或地图 NN。
+| 跨机器人地图 NN | 自由 Pose3 | 硬重力诊断 | 相对变化 |
+| --- | ---: | ---: | ---: |
+| median | 3.031 m | **3.016 m** | -0.47% |
+| p90 | **92.693 m** | 100.950 m | +8.91% |
+| p95 | **119.278 m** | 125.215 m | +4.98% |
+
+自由分支的 GT 指标与地图指标均在 `1e-6` 容差内复现上游 Stage 12D，说明
+比较没有受到数据或实现漂移影响。硬重力因子明显改善 joint/per-robot ATE，
+同时保持固定间隔 RPE；但是地图 NN 尾部恶化，所以不能把 ATE 改善解释为
+地图质量整体验收通过。硬因子仍是失效模式诊断上界。
+
+公开聚合指标位于 `results/cumulti_pgo_gravity_validation/offline_gt_metrics.csv`
+和 `map_consistency.csv`，论文主图为 `offline_gt_map_comparison.png`。
 
 ## 新评价器
 
@@ -43,7 +54,7 @@
 测试覆盖无尺度刚体对齐、全局刚体变换下的 RPE 不变性、joint/independent
 ATE、双向地图 NN、冻结基线复现和完整 phase-order 写出。
 
-## 所需数据与运行命令
+## 数据与运行命令
 
 需要原 Stage 12D processed 数据中的：
 
@@ -67,6 +78,6 @@ external/pgo-env/bin/python src/cumulti/evaluate_pgo_gravity_offline.py \
   --output-dir outputs/cumulti_pgo_gravity_offline_evaluation
 ```
 
-当前仓库与本地归档中没有这四项原始 processed 输入。继续实际评价需要用户
-明确授权从服务器读取，或把数据复制到本机；交接文档里的凭据不会被代码、
-日志、命令或 Git 记录。
+本次完整评价在独立实验目录中只读服务器 processed 数据，未修改团队仓库或
+冻结结果。公开仓库不保存原始 GT、点云、逐帧轨迹、服务器绝对路径或凭据；
+只保存聚合指标、输入哈希、复现判定和图表。
