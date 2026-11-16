@@ -1,0 +1,65 @@
+{
+  "date": "2026-11-16",
+  "GT_used": false,
+  "frozen_stable_starts": {
+    "robot1": 150,
+    "robot3": 234
+  },
+  "source_semantics": {
+    "message_type": "nav_msgs/msg/Odometry",
+    "orientation_block": "fixed-axis rotation X/Y/Z covariance",
+    "saved_stage12c_proxy": "trace of the 3x3 orientation covariance block",
+    "tilt_sigma_proxy": "sqrt((roll_variance + pitch_variance) / 2)"
+  },
+  "robot3": {
+    "status": "FULL_TILT_COVARIANCE_AVAILABLE",
+    "stable_rows": 3946,
+    "decoded_rows": 3946,
+    "missing_decoded_rows": 0,
+    "zero_trace_rows": 0,
+    "negative_diagonal_rows": 0,
+    "non_psd_rows": 0,
+    "maximum_saved_trace_delta_rad2": 9.996344030316351e-17,
+    "saved_trace_reproduction_passed": true,
+    "stability_csv_sha256": "401ec248a859618269a636d390133b0621c4baa7d34cd9bccd12d4ffc85b35a1",
+    "quantiles": {
+      "tilt_sigma_proxy_deg": {
+        "q00": 0.015956320941162987,
+        "q05": 0.027304891781090572,
+        "q50": 0.04735199357045238,
+        "q95": 0.09290047266049797,
+        "q99": 0.11000534916244784,
+        "q100": 0.15531754568952386
+      },
+      "yaw_sigma_deg": {
+        "q00": 0.10929265168404417,
+        "q05": 0.16009778319051424,
+        "q50": 0.573969584136306,
+        "q95": 2.7766270709703895,
+        "q99": 3.5620001613048644,
+        "q100": 4.9732938148917105
+      },
+      "yaw_variance_share": {
+        "q00": 0.8272648796175661,
+        "q05": 0.9336334522848604,
+        "q50": 0.9867540737673741,
+        "q95": 0.99880209514323,
+        "q99": 0.9993928436335484,
+        "q100": 0.9996403591564548
+      }
+    }
+  },
+  "robot1": {
+    "status": "RAW_AXIS_COVARIANCE_UNAVAILABLE",
+    "stable_rows": 1850,
+    "matched_stage12c_rows": 1849,
+    "available_field": "orientation covariance trace only",
+    "raw_source_search_scope": "local workspace and server project data directories",
+    "blocking_input": "raw imu_gps archive or per-keyframe roll/pitch/yaw covariance export"
+  },
+  "policy_decision": "BLOCK_SOFT_FACTOR_UNTIL_ROBOT1_AXIS_COVARIANCE_IS_AUDITED",
+  "rejected_input": "Stage 12C orientation trace as a tilt-noise estimate",
+  "reason": "Robot3 median yaw variance share is 98.675%; the trace is dominated by yaw.",
+  "hard_diagnostic_sigma_deg": 0.01,
+  "hard_sigma_interpretation": "diagnostic bound, not covariance-derived production noise"
+}

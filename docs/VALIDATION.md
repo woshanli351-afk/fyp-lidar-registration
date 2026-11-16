@@ -22,10 +22,11 @@
 公开历史指标来自原研究归档；原服务器验收见 `results/cumulti_stage11/VALIDATION_REPORT.txt`。
 
 > 上段是 2026-09-23 首次发布时的历史状态。2026-11-10 已补做完整
-> 5796 节点 batch PGO 的 GT-free 重放与重力保持诊断，并通过 6 个新增
-> 单元测试；2026-11-11 又增加 6 个 offline evaluator 测试。当前重力轨迹的
-> 离线 GT、点云地图精度及增量 PGO 仍未执行。详见
-> `docs/CUMULTI_PGO_GRAVITY_VALIDATION.md`。
+> 5796 节点 batch PGO 的 GT-free 重放与重力保持诊断，并通过相关单元测试；
+> 2026-11-15 已完成独立离线 GT/点云地图评价。2026-11-16 又增加姿态协方差
+> 审计测试，并在 Robot3 原始归档上完成 3946/3946 条 trace 复现；Robot1
+> 原始协方差仍缺失。详见 `docs/CUMULTI_PGO_GRAVITY_VALIDATION.md` 和
+> `docs/CUMULTI_PGO_SOFT_GRAVITY_INPUT_AUDIT.md`。
 
 复查命令：
 
@@ -34,6 +35,8 @@ python -m unittest discover -s src/kitti -p test_pipeline.py -v
 python -m unittest discover -s src/cumulti -p test_stage11_gicp_value.py -v
 python -m unittest discover -s src/cumulti -p test_pgo_gravity_validation.py -v
 python -m unittest discover -s src/cumulti -p test_pgo_gravity_offline.py -v
+python -m unittest discover -s src/cumulti -p test_pgo_orientation_covariance.py -v
+python src/cumulti/audit_pgo_orientation_covariance.py --help
 python src/cumulti/gicp_value_backend.py --help
 python src/cumulti/run_stage11_gicp_value_study.py --help
 python src/cumulti/run_stage11_latency.py --help

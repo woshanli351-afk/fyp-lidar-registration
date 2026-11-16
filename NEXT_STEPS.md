@@ -10,11 +10,14 @@
 5. 离线评价已完成：hard-gravity 将 joint ATE RMSE 降低 29.94%，Robot3
    scoped ATE 降低 29.06%，但地图 NN p90/p95 分别恶化 8.91%/4.98%。
    不把 ATE 改善单独解释为地图质量验收通过。
-6. 下一步用 IMU/EKF 姿态协方差设计软重力因子，预先冻结有限灵敏度范围；
-   采用门槛至少包括 joint/Robot3 ATE 改善、RPE 不恶化、地图 NN p90/p95
-   不恶化。通过后再把 Python CustomFactor 改为原生因子，并验证 batch 与
-   因果 iSAM2 的数值一致性和运行成本。
-7. 后续每次实验同步代码、配置、指标摘要与报告，保留完整数据在外部归档。
+6. Robot3 分轴姿态协方差审计已经通过，但 Stage 12C 三轴 trace 被 yaw 主导，
+   不得直接作为重力噪声。先取得 Robot1 原始 `imu_gps` 归档或同一消息序号的
+   roll/pitch/yaw 协方差导出，并用相同脚本通过覆盖率、trace 复现和 PSD 检查。
+7. 两个机器人输入都通过后，再冻结按节点软重力因子和有限灵敏度范围；采用
+   门槛至少包括 joint/Robot3 ATE 改善、RPE 不恶化、地图 NN p90/p95 不恶化。
+   通过后再把 Python CustomFactor 改为原生因子，并验证 batch 与因果 iSAM2
+   的数值一致性和运行成本。
+8. 后续每次实验同步代码、配置、指标摘要与报告，保留完整数据在外部归档。
 
 本次发布不重新调参、不重跑全量实验、不将历史 KITTI PGO 指标当作 CU-Multi Demo 成功证明。
 

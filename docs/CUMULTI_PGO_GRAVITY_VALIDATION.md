@@ -93,10 +93,13 @@ GT-free 诊断和离线 GT 评价共同支持“自由 6DoF 倾斜是一个真�
 但地图尾部指标否定了“硬重力已经解决地图拼接”的更强结论。不同因子集合的
 原始图目标值仍不能直接横向比较，也不能仅凭 ATE 或回环残差断言地图更准。
 
-下一步应把硬因子替换为由 IMU/EKF 姿态协方差支持的软重力因子，并预先冻结
-有限灵敏度范围。采用门槛必须同时要求 joint/Robot3 ATE 改善、固定间隔 RPE
-不恶化、地图 NN p90/p95 不恶化；通过后再做原生因子和 batch/iSAM2 一致性。
-完整评价协议与公开聚合结果见 `CUMULTI_PGO_OFFLINE_EVALUATION.md`。
+后续输入审计已经证明 Stage 12C 三轴姿态 trace 主要来自 yaw，不能直接给重力
+因子定权重；Robot3 分轴协方差可用，但 Robot1 原始归档仍缺失。因此先补齐
+Robot1 同粒度输入，再预先冻结软因子和有限灵敏度范围。采用门槛必须同时要求
+joint/Robot3 ATE 改善、固定间隔 RPE 不恶化、地图 NN p90/p95 不恶化；通过后
+再做原生因子和 batch/iSAM2 一致性。输入审计见
+`CUMULTI_PGO_SOFT_GRAVITY_INPUT_AUDIT.md`，完整评价协议与公开聚合结果见
+`CUMULTI_PGO_OFFLINE_EVALUATION.md`。
 
 ## 复现
 

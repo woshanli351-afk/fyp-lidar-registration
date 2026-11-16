@@ -90,3 +90,20 @@ python src/cumulti/run_stage11_latency.py --direction robot2_to_robot3 --repeats
 原始 30 对复现文件名为 `development_reproduction/rank1_30_new_backend.csv`。
 原始逐对注册结果和该复现文件未公开；重新验证需按原归档样本 ID 重建。
 本次仓库发布只做逻辑/导入/CLI 验证，不声称在缺少上述数据时完成端到端重现。
+
+## PGO 姿态协方差审计
+
+软重力因子使用前，应从原始 `nav_msgs/msg/Odometry` 归档分离 roll、pitch、yaw
+协方差，不能使用 Stage 12C 的三轴 trace 代替倾斜噪声：
+
+```bash
+python -m pip install -r requirements-pgo.txt
+python src/cumulti/audit_pgo_orientation_covariance.py \
+  --robot robot3 --stable-start 234 \
+  --stability-csv /path/to/robot3_full_ekf_stability.csv \
+  --imu-gps-archive /path/to/robot3_main_campus_imu_gps.zip \
+  --output-dir outputs/cumulti_pgo_orientation_covariance_audit
+```
+
+逐 keyframe CSV 只保留在 `outputs/`。公开仓库保存聚合分位数、覆盖率、trace
+复现和 PSD 判定；不保存原始 ROS 包或完整逐帧协方差。

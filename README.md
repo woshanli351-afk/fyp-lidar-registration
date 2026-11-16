@@ -13,10 +13,11 @@ CU-Multi 依赖模块来自团队代码，具体来源见 [代码来源](docs/PR
 2. [项目现状与 AI 上下文](PROJECT_CONTEXT.md)
 3. [最新 GICP 作用与性价比报告](docs/CUMULTI_STAGE11_GICP_VALUE_STUDY.md)
 4. [PGO 重力保持诊断](docs/CUMULTI_PGO_GRAVITY_VALIDATION.md)
-5. [PGO 离线精度评价状态](docs/CUMULTI_PGO_OFFLINE_EVALUATION.md)
-6. [Robot1/Robot3 数据质量评估](docs/CUMULTI_ROBOT13_DATA_QUALITY_ASSESSMENT.md)
-7. [运行指南](docs/RUNNING.md) 与 [候选/配准接口](docs/INTERFACES.md)
-8. [下一步](NEXT_STEPS.md) 与 [更新记录](CHANGELOG.md)
+5. [软重力因子输入审计](docs/CUMULTI_PGO_SOFT_GRAVITY_INPUT_AUDIT.md)
+6. [PGO 离线精度评价状态](docs/CUMULTI_PGO_OFFLINE_EVALUATION.md)
+7. [Robot1/Robot3 数据质量评估](docs/CUMULTI_ROBOT13_DATA_QUALITY_ASSESSMENT.md)
+8. [运行指南](docs/RUNNING.md) 与 [候选/配准接口](docs/INTERFACES.md)
+9. [下一步](NEXT_STEPS.md) 与 [更新记录](CHANGELOG.md)
 
 ## 已有结果
 
@@ -39,6 +40,12 @@ Stage 11 原始实验完成于 2026-09-23，当前发布只整理代码和历史
 基本不变，但跨机器人地图 NN p95 从 119.278 m 上升到 125.215 m。因此硬重力
 约束仍是诊断上界，不是已经验收的最终后端；下一步应测试协方差支持的软因子，
 并把地图尾部不恶化作为采用门槛。
+
+2026-11-16 完成软因子输入审计。Robot3 稳定段 3946/3946 个 EKF 消息可从
+原始归档解码，roll/pitch 倾斜 sigma 代理中位数为 0.047°、p95 为 0.093°；
+Stage 12C 三轴 trace 的中位数有 98.68% 来自 yaw，因此不能直接用于重力
+因子。Robot1 原始 IMU/GPS 归档当前缺失，软因子实验在补齐同粒度分轴协方差
+前保持阻塞，不使用 GT 反推权重。
 
 ![PGO gravity offline comparison](results/cumulti_pgo_gravity_validation/offline_gt_map_comparison.png)
 
@@ -89,6 +96,8 @@ PGO 重放使用单独的 Python 3.10 环境和 `requirements-pgo.txt`（GTSAM 4
 
 ```bash
 python -m unittest discover -s src/cumulti -p test_pgo_gravity_validation.py -v
+python -m unittest discover -s src/cumulti -p test_pgo_gravity_offline.py -v
+python -m unittest discover -s src/cumulti -p test_pgo_orientation_covariance.py -v
 ```
 
 实际配准再安装 `requirements-gicp.txt`；CVTNet 再安装 `requirements-cvtnet.txt` 及官方仓库依赖。
