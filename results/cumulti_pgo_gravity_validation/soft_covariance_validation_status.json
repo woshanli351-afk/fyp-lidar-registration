@@ -1,0 +1,72 @@
+{
+  "date": "2026-11-16",
+  "graph": {
+    "nodes": 5796,
+    "loop_factors": 75,
+    "covariance_coverage_fraction": 0.9998274672187716,
+    "selected_variant": "ekf_gravity_soft_cov_x8",
+    "selected_trajectory_sha256": "b8347792a86eb3fdbd478f3c7c42a1b0f572a6d964b70db4f6294328fa003d6b"
+  },
+  "phase_order": {
+    "pre_gt_selection_used_GT": false,
+    "offline_evaluation_used_GT": true,
+    "pre_gt_decision_unchanged": true,
+    "solver_rerun_during_offline_evaluation": false
+  },
+  "pre_gt_result": {
+    "decision": "SOFT_COVARIANCE_GT_FREE_CANDIDATE_FROZEN",
+    "selection_rule": "largest predeclared inflation scale meeting every GT-free gate",
+    "free_common_up_p95_deg": 12.799620425744973,
+    "soft_common_up_p95_deg": 0.3523982510579736,
+    "free_loop_translation_p95_m": 0.19620215705401595,
+    "soft_loop_translation_p95_m": 0.19401882032238046,
+    "soft_new_steps_over_5m": 0
+  },
+  "offline_result": {
+    "free": {
+      "joint_ATE_RMSE_m": 19.60795717910495,
+      "robot1_scoped_ATE_RMSE_m": 12.108315246069148,
+      "robot3_scoped_ATE_RMSE_m": 22.270788463091137,
+      "combined_RPE_translation_RMSE_m": 10.540927410698206,
+      "combined_RPE_rotation_RMSE_deg": 7.521673839953886,
+      "map_NN_median_m": 3.0305062789563957,
+      "map_NN_p90_m": 92.69284619103786,
+      "map_NN_p95_m": 119.27754248994867
+    },
+    "hard_diagnostic": {
+      "joint_ATE_RMSE_m": 13.737294766801815,
+      "map_NN_p90_m": 100.95031807974136,
+      "map_NN_p95_m": 125.21531803611892
+    },
+    "soft_x8": {
+      "joint_ATE_RMSE_m": 13.724825924431588,
+      "robot1_scoped_ATE_RMSE_m": 7.66265469484218,
+      "robot3_scoped_ATE_RMSE_m": 15.784698098942242,
+      "combined_RPE_translation_RMSE_m": 10.541092966577331,
+      "combined_RPE_rotation_RMSE_deg": 7.496325101806617,
+      "map_NN_median_m": 3.0182375851727725,
+      "map_NN_p90_m": 100.94467279876582,
+      "map_NN_p95_m": 125.19823426601019
+    },
+    "soft_x8_relative_to_free_percent": {
+      "joint_ATE_RMSE": -30.00379489273197,
+      "robot1_scoped_ATE_RMSE": -36.71576483499809,
+      "robot3_scoped_ATE_RMSE": -29.123757225291524,
+      "combined_RPE_translation_RMSE": 0.0015706006945448436,
+      "combined_RPE_rotation_RMSE": -0.3370092706309613,
+      "map_NN_median": -0.40483974142591084,
+      "map_NN_p90": 8.902333833531383,
+      "map_NN_p95": 4.963794233571206
+    }
+  },
+  "adoption_gate": {
+    "joint_ATE_improves": true,
+    "robot3_ATE_improves": true,
+    "combined_RPE_not_materially_worse": true,
+    "map_NN_p90_not_worse": false,
+    "map_NN_p95_not_worse": false,
+    "passed": false
+  },
+  "decision": "REJECT_GRAVITY_FACTOR_FOR_FINAL_BACKEND",
+  "interpretation": "The covariance-derived factor validates the tilt failure mode but reproduces the hard diagnostic's map-tail regression. Gravity strength alone does not explain the remaining map inconsistency."
+}

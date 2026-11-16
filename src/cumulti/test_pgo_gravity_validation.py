@@ -105,6 +105,21 @@ class GeometryContractTests(unittest.TestCase):
         self.assertEqual(hard_counts["gravity_factors"], len(self.local) - 1)
         self.assertEqual(hard_graph.size() - free_graph.size(), len(self.local) - 1)
 
+    def test_covariance_gravity_variant_skips_unmatched_node(self) -> None:
+        common, _ = first_loop_initialization(self.local, self.loops)
+        sigmas = {
+            ("robot1", 1): 0.05,
+            ("robot3", 0): 0.06,
+            # robot3 keyframe 1 deliberately has no accepted covariance.
+        }
+        graph, counts = build_graph(
+            self.local_frame, self.local, self.loops, common,
+            Variant("soft", True), 0.01, sigmas,
+        )
+        self.assertEqual(counts["gravity_factors"], 2)
+        self.assertEqual(counts["gravity_covariance_missing_nodes"], 1)
+        self.assertEqual(graph.size(), 1 + 2 + 1 + 2)
+
     def test_gravity_factor_leaves_yaw_unpenalized(self) -> None:
         pose_key = key("robot1", 9)
         factor = gravity_factor(pose_key, np.array([0.0, 0.0, 1.0]), np.array([0.0, 0.0, 1.0]), 0.01)

@@ -1,7 +1,7 @@
 # CU-Multi PGO 离线精度评价状态
 
-日期：2026-11-15。状态：当前 75 回环自由/重力保持轨迹的真实 GT 与点云
-地图评价已完成；自由 Stage 12D 基线复现通过。
+日期：2026-11-16。状态：当前 75 回环自由、硬重力和协方差软重力轨迹的真实
+GT 与点云地图评价已完成；自由 Stage 12D 基线复现通过。
 
 ## 为什么不能直接复用历史结果
 
@@ -37,6 +37,24 @@
 
 公开聚合指标位于 `results/cumulti_pgo_gravity_validation/offline_gt_metrics.csv`
 和 `map_consistency.csv`，论文主图为 `offline_gt_map_comparison.png`。
+
+## 协方差软重力追加评价
+
+软因子候选 `ekf_gravity_soft_cov_x8` 在读取 GT 前按预声明规则冻结；离线评价器
+通过 `--candidate-label` 复用同一协议，并确认 pre-GT 决定未改变、求解器未重跑。
+
+| 指标 | 自由 Pose3 | soft ×8 | 相对变化 |
+| --- | ---: | ---: | ---: |
+| joint ATE RMSE | 19.608 m | **13.725 m** | **-30.00%** |
+| Robot3 scoped ATE RMSE | 22.271 m | **15.785 m** | **-29.12%** |
+| combined RPE translation RMSE | 10.5409 m | 10.5411 m | +0.002% |
+| map NN median | 3.031 m | **3.018 m** | -0.40% |
+| map NN p90 | **92.693 m** | 100.945 m | **+8.90%** |
+| map NN p95 | **119.278 m** | 125.198 m | **+4.96%** |
+
+软因子的 ATE 改善与硬诊断近乎相同，但地图尾部仍恶化，所以最终采用门槛失败。
+公开追加结果使用 `soft_covariance_` 前缀，完整判定见
+[协方差软重力验证](CUMULTI_PGO_SOFT_GRAVITY_VALIDATION.md)。
 
 ## 新评价器
 
@@ -76,6 +94,12 @@ external/pgo-env/bin/python src/cumulti/evaluate_pgo_gravity_offline.py \
   --expected-free-metrics /path/to/clean_offline_gt_evaluation.csv \
   --expected-free-map /path/to/clean_map_consistency.csv \
   --output-dir outputs/cumulti_pgo_gravity_offline_evaluation
+```
+
+评价软候选时把 `--gravity-trajectory` 指向冻结的 soft 轨迹，并增加：
+
+```bash
+--candidate-label ekf_gravity_soft_cov_x8
 ```
 
 本次完整评价在独立实验目录中只读服务器 processed 数据，未修改团队仓库或

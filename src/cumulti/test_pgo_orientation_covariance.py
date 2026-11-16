@@ -2,13 +2,32 @@
 from __future__ import annotations
 
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import pandas as pd
 
-from audit_pgo_orientation_covariance import summarize_frame
+from audit_pgo_orientation_covariance import load_keyframe_timestamps, summarize_frame
 
 
 class OrientationCovarianceAuditTests(unittest.TestCase):
+    def test_keyframe_timestamp_loader_uses_only_gtfree_columns(self) -> None:
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "keyframes.csv"
+            pd.DataFrame({
+                "robot_id": ["robot1", "robot1", "robot1", "robot3"],
+                "keyframe_id": [149, 150, 151, 150],
+                "lidar_timestamp_ns": [100, 200, 300, 400],
+                "x": [999.0, 999.0, 999.0, 999.0],
+                "yaw_deg": [999.0, 999.0, 999.0, 999.0],
+            }).to_csv(path, index=False)
+            frame = load_keyframe_timestamps(path, "robot1", 150)
+        self.assertEqual(frame.keyframe_id.to_list(), [150, 151])
+        self.assertEqual(frame.lidar_timestamp_ns.to_list(), [200, 300])
+        self.assertEqual(
+            set(frame.columns), {"robot_id", "keyframe_id", "lidar_timestamp_ns"}
+        )
+
     def test_summary_checks_trace_and_covariance_validity(self) -> None:
         frame = pd.DataFrame({
             "message_id": [10, 11],
@@ -29,6 +48,7 @@ class OrientationCovarianceAuditTests(unittest.TestCase):
         self.assertEqual(summary["matched_stability_rows"], 2)
         self.assertEqual(summary["decoded_rows"], 2)
         self.assertEqual(summary["missing_decoded_rows"], 0)
+        self.assertEqual(summary["decoded_coverage_fraction"], 1.0)
         self.assertTrue(summary["saved_trace_reproduction_passed"])
         self.assertEqual(summary["negative_diagonal_rows"], 0)
         self.assertEqual(summary["non_psd_rows"], 0)
@@ -74,6 +94,7 @@ class OrientationCovarianceAuditTests(unittest.TestCase):
         self.assertEqual(summary["matched_stability_rows"], 1)
         self.assertEqual(summary["decoded_rows"], 1)
         self.assertEqual(summary["missing_decoded_rows"], 1)
+        self.assertEqual(summary["decoded_coverage_fraction"], 0.5)
         self.assertTrue(summary["saved_trace_reproduction_passed"])
 
 

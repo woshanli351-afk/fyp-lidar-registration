@@ -22,11 +22,33 @@
 公开历史指标来自原研究归档；原服务器验收见 `results/cumulti_stage11/VALIDATION_REPORT.txt`。
 
 > 上段是 2026-09-23 首次发布时的历史状态。2026-11-10 已补做完整
-> 5796 节点 batch PGO 的 GT-free 重放与重力保持诊断，并通过相关单元测试；
-> 2026-11-15 已完成独立离线 GT/点云地图评价。2026-11-16 又增加姿态协方差
-> 审计测试，并在 Robot3 原始归档上完成 3946/3946 条 trace 复现；Robot1
-> 原始协方差仍缺失。详见 `docs/CUMULTI_PGO_GRAVITY_VALIDATION.md` 和
-> `docs/CUMULTI_PGO_SOFT_GRAVITY_INPUT_AUDIT.md`。
+> 5796 节点 batch PGO 的 GT-free 重放与重力保持诊断；2026-11-15 已完成
+> 独立离线 GT/点云地图评价；2026-11-16 又完成 Robot1/Robot3 分轴协方差
+> 审计和 soft ×8 的冻结后评价。详见 `docs/CUMULTI_PGO_GRAVITY_VALIDATION.md`、
+> `docs/CUMULTI_PGO_SOFT_GRAVITY_INPUT_AUDIT.md` 和
+> `docs/CUMULTI_PGO_SOFT_GRAVITY_VALIDATION.md`。
+
+## 2026-11-17 协方差软重力发布验证
+
+| 检查 | 结果 |
+| --- | --- |
+| 姿态协方差审计测试 | 4/4 通过 |
+| PGO 几何与按节点因子测试 | 8/8 通过 |
+| 软重力输入与尺度冻结测试 | 3/3 通过 |
+| 离线 ATE/RPE/地图评价测试 | 7/7 通过 |
+| Stage 11 SC/GICP 回归测试 | 7/7 通过 |
+| 相关测试合计 | **29/29 通过** |
+| 5 个相关 CLI `--help` | 通过 |
+| 所有公开 JSON 解析 | 通过 |
+| soft 指标由公开 CSV 独立复算 | 通过 |
+| 最终图表视觉检查 | 通过，无截断、重叠或缺失标记 |
+| 凭据、服务器/个人绝对路径扫描 | 待提交内容未检出 |
+| `git diff --check` | 通过 |
+
+真实数据实验在独立服务器目录完成：Robot1/Robot3 协方差覆盖 5795/5796，
+GT-free 阶段冻结 soft ×8，随后仅对该候选运行 GT/点云评价。自由基线的上游
+GT 与地图汇总均在 `1e-6` 容差内复现，pre-GT 决定未改变，离线评价未重跑
+求解器。公开仓库不包含原始 ROS 包、GT、点云、逐节点轨迹、服务器路径或凭据。
 
 复查命令：
 
@@ -36,6 +58,9 @@ python -m unittest discover -s src/cumulti -p test_stage11_gicp_value.py -v
 python -m unittest discover -s src/cumulti -p test_pgo_gravity_validation.py -v
 python -m unittest discover -s src/cumulti -p test_pgo_gravity_offline.py -v
 python -m unittest discover -s src/cumulti -p test_pgo_orientation_covariance.py -v
+python -m unittest discover -s src/cumulti -p test_pgo_soft_gravity_validation.py -v
+python src/cumulti/run_pgo_soft_gravity_validation.py --help
+python src/cumulti/plot_pgo_soft_gravity_comparison.py --help
 python src/cumulti/audit_pgo_orientation_covariance.py --help
 python src/cumulti/gicp_value_backend.py --help
 python src/cumulti/run_stage11_gicp_value_study.py --help

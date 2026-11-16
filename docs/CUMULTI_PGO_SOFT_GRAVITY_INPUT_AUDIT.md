@@ -1,83 +1,95 @@
 # CU-Multi 软重力因子输入审计
 
-日期：2026-11-16。状态：Robot3 分轴姿态协方差已通过 GT-free 审计；Robot1
-原始 IMU/GPS 归档缺失，因此尚未开始软重力因子的权重选择或 GT 评价。
+日期：2026-11-16。状态：Robot1/Robot3 原始 EKF 姿态协方差均已完成 GT-free
+审计；Robot1 有 1 个节点超过冻结的 50 ms header 时间门槛，该节点不添加
+重力因子，其余 5795/5796 个图节点可用于按节点软约束。
 
-## 为什么先审计协方差
+## 为什么不能使用 Stage 12C 的 trace
 
-Stage 12C 的稳定性表只保存 `ekf_orientation_covariance_proxy`。源代码定义它为
-`nav_msgs/msg/Odometry.pose.covariance` 中旋转 `X/Y/Z` 三轴块的 trace，也就是
-roll、pitch、yaw 方差之和。重力因子只应限制倾斜方向（roll/pitch），不能把
-yaw 不确定度混入权重，否则会把重力观测错误地设得过松。
+Stage 12C 只保存 `ekf_orientation_covariance_proxy`，它是
+`nav_msgs/msg/Odometry.pose.covariance` 旋转 X/Y/Z 三轴块的 trace，即
+roll、pitch、yaw 方差之和。重力因子只能约束 roll/pitch；把 yaw 混入噪声会
+错误地改变权重。
 
-审计工具 `src/cumulti/audit_pgo_orientation_covariance.py` 回到原始 ROS 2 DB3，
-按冻结的 EKF 消息序号解码每个稳定段 keyframe 的完整 3×3 旋转协方差。它不
-读取 GT，也不改变 Robot1 KF150、Robot3 KF234 的稳定段起点。
+本审计从原始 ROS 2 DB3 解码完整 3×3 旋转协方差，并定义
 
-## 完整性检查
+```text
+tilt_sigma_proxy = sqrt((roll_variance + pitch_variance) / 2)
+```
 
-| 检查 | Robot3 结果 |
-| --- | ---: |
-| 冻结稳定段 keyframes | 3946 |
-| 成功定位并解码原始消息 | 3946 / 3946 |
-| Stage 12C trace 最大复现误差 | `9.996e-17 rad²` |
-| 零 trace / 负对角 / 非半正定行 | 0 / 0 / 0 |
-| 旋转协方差最大非对角元素 | 0 |
+该量只来自 EKF 协方差，不读取 GT。Robot1 KF150、Robot3 KF234 的稳定段起点、
+50 ms 时间关联门槛和原始消息字段均保持冻结。
 
-因此 Robot3 的分轴协方差可用。逐 keyframe 输出仍保留在 Git 忽略的实验目录，
-公开仓库只保存聚合结果和判定。
+## 输入和覆盖率
 
-Robot1 稳定段有 1850 个 keyframes，其中 1849 行在 Stage 12C 中匹配到 EKF
-消息；但是当前本地工作区与服务器项目数据目录中都没有 Robot1 的原始
-`imu_gps` DB3。现有 CSV 只有三轴 trace，无法恢复 roll/pitch 与 yaw 的分量，
-所以 Robot1 尚不满足同样的输入验收。
+原 Stage 12C 稳定性 CSV 在当前服务器上已经不存在，因此审计器增加了等价的
+GT-free 重建入口：它只读取 processed `keyframes.csv` 中的
+`robot_id,keyframe_id,lidar_timestamp_ns`，先找最近 EKF bag timestamp，再检查
+header timestamp，两者都必须在 0.05 s 内。它不会加载 keyframe 的位置、姿态
+或任何 GT 列。
 
-## Robot3 分轴结果
+| 检查 | Robot1 | Robot3 |
+| --- | ---: | ---: |
+| 冻结稳定段节点 | 1850 | 3946 |
+| 成功解码分轴协方差 | 1849 | 3946 |
+| 覆盖率 | 99.946% | 100% |
+| 零 trace / 负对角 / 非 PSD | 0 / 0 / 0 | 0 / 0 / 0 |
+| 原始归档 SHA-256 | `43cd171d...4790a3b4` | `da7fb9fe...43e50ed` |
 
-这里的倾斜 sigma 代理定义为
-`sqrt((roll_variance + pitch_variance) / 2)`；它是预声明软因子量级的输入，
-不是经过 GT 调优后的最终噪声模型。
+Robot1 唯一缺失的是 KF1199。最近 bag timestamp 只差 1.618 ms，但 EKF header
+timestamp 差 52.034 ms，略高于冻结的 50 ms 门槛。实验没有为补齐这一行放宽
+门槛，也没有插值或使用 GT；运行时直接对该节点省略重力因子。Robot1 首节点
+本来就是固定锚点，因此最终 5796 节点图加入 5794 个软重力因子。
 
-| 分位数 | tilt sigma proxy | yaw sigma | yaw 占三轴方差比例 |
-| --- | ---: | ---: | ---: |
-| min | 0.01596° | 0.10929° | 82.73% |
-| p05 | 0.02730° | 0.16010° | 93.36% |
-| median | **0.04735°** | 0.57397° | **98.68%** |
-| p95 | **0.09290°** | 2.77663° | 99.88% |
-| p99 | 0.11001° | 3.56200° | 99.94% |
-| max | 0.15532° | 4.97329° | 99.96% |
+重建路径中的 trace 是从同一条原始消息再次计算的自一致性检查，不应称为独立
+复现旧 Stage 12C CSV。Robot3 先前使用原 Stage 12C 表完成的独立 trace 复现仍
+保留：最大绝对误差为 `9.996e-17 rad²`。
 
-这证明 Stage 12C 三轴 trace 不能作为倾斜噪声。Robot3 如果把 trace 平均到三轴，
-得到的 sigma 中位数为约 0.336°、p95 为约 1.604°，远大于从 roll/pitch 分量
-得到的 0.047°/0.093°；差异主要来自 yaw。原硬诊断使用的 `0.01°` 又低于
-Robot3 观测到的最小倾斜代理 0.01596°，进一步说明它只是失效模式上界。
+## 分轴结果
 
-## 当前决定
+| 机器人 | tilt sigma min | median | p95 | max | yaw 方差占比 median |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Robot1 | 0.01473° | **0.04137°** | **0.07214°** | 0.09704° | **99.41%** |
+| Robot3 | 0.01596° | **0.04735°** | **0.09290°** | 0.15532° | **98.68%** |
+| 合并 | 0.01473° | **0.04493°** | **0.08796°** | 0.15532° | — |
 
-1. **否决**直接使用 `ekf_orientation_covariance_proxy` 或
-   `sqrt(trace/3)` 给重力因子定权重；它主要描述 yaw。
-2. **不运行**只基于 Robot3 分布的双机器人软因子，也不根据当前 ATE/地图 GT
-   反推 sigma。
-3. 先取得 Robot1 原始 `imu_gps` 归档，或导出同一 EKF 消息序号对应的
-   roll/pitch/yaw 协方差；然后用相同脚本完成覆盖率、trace 复现和 PSD 检查。
-4. 两个机器人输入都通过后，先冻结按节点协方差映射及有限灵敏度范围，再运行
-   离线评价。采用门槛仍为 joint/Robot3 ATE 改善、RPE 不恶化、地图 NN
-   p90/p95 不恶化，并检查没有新增大步长。
+两个机器人都证明三轴 trace 被 yaw 主导，因此仍然**否决**直接使用 trace 或
+`sqrt(trace/3)` 给重力因子定权重。原硬诊断的固定 `0.01°` 也低于两个机器人
+观测到的最小倾斜代理，只能视为失效模式上界。
 
-这个结论是一个输入数据阻塞，不是算法失败。Robot3 已证明原始 EKF 数据足以
-支持正确建模；缺少的是 Robot1 同粒度证据。
+## 审计决定
+
+1. 使用每个已解码节点的 roll/pitch 方差计算基础倾斜 sigma；
+2. Robot1 KF1199 按预声明策略省略因子，不修改时间阈值；
+3. 允许进入有限、预声明的协方差膨胀实验，但选择尺度时不得读取 GT；
+4. 只有冻结候选后才能运行离线 GT/地图评价；地图 NN p90/p95 不恶化仍是采用
+   最终后端的必要条件。
+
+软因子实验和最终否决结论见
+[协方差软重力验证](CUMULTI_PGO_SOFT_GRAVITY_VALIDATION.md)。公开聚合输入判定为
+`results/cumulti_pgo_gravity_validation/orientation_covariance_audit_summary.json`。
 
 ## 复现
 
-安装 `requirements-pgo.txt` 后运行：
+如有 Stage 12C 稳定表，可继续使用原入口：
 
 ```bash
 python src/cumulti/audit_pgo_orientation_covariance.py \
   --robot robot3 --stable-start 234 \
   --stability-csv /path/to/robot3_full_ekf_stability.csv \
   --imu-gps-archive /path/to/robot3_main_campus_imu_gps.zip \
-  --output-dir outputs/cumulti_pgo_orientation_covariance_audit
+  --output-dir outputs/robot3_covariance_audit
 ```
 
-公开聚合判定位于
-`results/cumulti_pgo_gravity_validation/orientation_covariance_audit_summary.json`。
+如稳定表缺失，则用冻结 keyframe 时间戳重建：
+
+```bash
+python src/cumulti/audit_pgo_orientation_covariance.py \
+  --robot robot1 --stable-start 150 \
+  --keyframes-csv /path/to/robot1/keyframes.csv \
+  --imu-gps-archive /path/to/robot1_main_campus_imu_gps.zip \
+  --output-dir outputs/robot1_covariance_audit
+```
+
+逐节点协方差、重建关联表和原始归档只保留在 Git 忽略的实验目录；公开仓库只
+保存聚合分位数、覆盖率、哈希、缺失策略和判定。

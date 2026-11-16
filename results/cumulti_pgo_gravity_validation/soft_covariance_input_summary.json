@@ -1,0 +1,51 @@
+{
+  "inputs": [
+    {
+      "filename": "robot1_orientation_covariance_by_keyframe.csv",
+      "size_bytes": 557150,
+      "sha256": "cbf6f87d952c8e85c3f0c6e30a3494c9380ff849fa76e2a013418aaa24e15d51"
+    },
+    {
+      "filename": "robot3_orientation_covariance_by_keyframe.csv",
+      "size_bytes": 1184378,
+      "sha256": "a94f9e723f0032195150a12caafcd359e9a2e2298d38efbccbd73d1dff3fc247"
+    }
+  ],
+  "graph_nodes": 5796,
+  "decoded_covariance_nodes": 5795,
+  "coverage_fraction": 0.9998274672187716,
+  "missing_nodes": [
+    [
+      "robot1",
+      1199
+    ]
+  ],
+  "missing_covariance_policy": "omit gravity factor for unmatched node",
+  "base_sigma_deg": {
+    "count": 5795,
+    "min": 0.014732747230293552,
+    "median": 0.044932958562967064,
+    "p95": 0.08795539312119087,
+    "p99": 0.10786880405315176,
+    "max": 0.15531754568952388
+  },
+  "per_robot": {
+    "robot1": {
+      "count": 1849,
+      "min": 0.014732747230293552,
+      "median": 0.04137262838078269,
+      "p95": 0.07214038986830298,
+      "p99": 0.09235195429487644,
+      "max": 0.09704369933393872
+    },
+    "robot3": {
+      "count": 3946,
+      "min": 0.015956320941162987,
+      "median": 0.04735199357045238,
+      "p95": 0.09290047266049797,
+      "p99": 0.11000534916244784,
+      "max": 0.15531754568952388
+    }
+  },
+  "GT_used": false
+}

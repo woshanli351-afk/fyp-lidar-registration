@@ -58,6 +58,16 @@ def trajectory_and_gt() -> tuple[pd.DataFrame, dict[str, pd.DataFrame]]:
 
 
 class OfflineMetricTests(unittest.TestCase):
+    def test_candidate_label_cannot_overwrite_free_baseline_identity(self) -> None:
+        with TemporaryDirectory() as directory:
+            output = Path(directory) / "output"
+            with self.assertRaisesRegex(ValueError, "differ from free baseline"):
+                run(Namespace(
+                    output_dir=output,
+                    candidate_label="free_pose3_replay",
+                ))
+            self.assertEqual(list(output.iterdir()), [])
+
     def test_rigid_alignment_has_no_scale_and_recovers_rigid_transform(self) -> None:
         points = np.array([[0, 0, 0], [1, 0, 0], [0, 2, 0], [1, 2, 1]], dtype=float)
         rotation = Rotation.from_euler("xyz", [5, -3, 40], degrees=True).as_matrix()
@@ -130,6 +140,7 @@ class OfflineMetricTests(unittest.TestCase):
                 pre_gt_decision=decision_path,
                 free_trajectory=free_path,
                 gravity_trajectory=hard_path,
+                candidate_label="ekf_gravity_soft_cov_x8",
                 robot1_keyframes=robot1_path,
                 robot3_keyframes=robot3_path,
                 robot1_lidar_root=None,
@@ -152,6 +163,10 @@ class OfflineMetricTests(unittest.TestCase):
             self.assertTrue(freeze.is_file() and metrics.is_file())
             self.assertLessEqual(freeze.stat().st_mtime_ns, metrics.stat().st_mtime_ns)
             self.assertEqual(len(pd.read_csv(metrics)), 16)
+            self.assertIn(
+                "ekf_gravity_soft_cov_x8",
+                pd.read_csv(metrics).variant.unique(),
+            )
 
 
 if __name__ == "__main__":

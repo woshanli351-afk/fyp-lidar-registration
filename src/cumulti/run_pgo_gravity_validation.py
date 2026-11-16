@@ -222,6 +222,7 @@ def build_graph(
     common_initial: dict[tuple[str, int], np.ndarray],
     variant: Variant,
     gravity_sigma_deg: float,
+    gravity_sigma_by_node_deg: dict[tuple[str, int], float] | None = None,
 ) -> tuple[gtsam.NonlinearFactorGraph, dict[str, int]]:
     odometry_noise = gtsam.noiseModel.Diagonal.Sigmas(
         np.array([math.radians(5)] * 3 + [1.0] * 3)
@@ -252,15 +253,23 @@ def build_graph(
         ))
 
     gravity_factor_count = 0
+    gravity_covariance_missing_nodes = 0
     if variant.preserve_ekf_gravity:
         # The factor compares mapped EKF up vectors directly. Rotation around
         # that vector (yaw) and all translation components lie in its nullspace.
         for node, center in common_initial.items():
             if node == anchor:
                 continue
+            if gravity_sigma_by_node_deg is not None:
+                node_sigma = gravity_sigma_by_node_deg.get(node)
+                if node_sigma is None:
+                    gravity_covariance_missing_nodes += 1
+                    continue
+            else:
+                node_sigma = gravity_sigma_deg
             sensor_up = local[node][:3, :3].T @ np.array([0.0, 0.0, 1.0])
             target_up = center[:3, :3] @ sensor_up
-            graph.add(gravity_factor(key(*node), sensor_up, target_up, gravity_sigma_deg))
+            graph.add(gravity_factor(key(*node), sensor_up, target_up, node_sigma))
             gravity_factor_count += 1
 
     counts = {
@@ -269,6 +278,7 @@ def build_graph(
         "loop_factors": len(loops),
         "anchor_priors": 1,
         "gravity_factors": gravity_factor_count,
+        "gravity_covariance_missing_nodes": gravity_covariance_missing_nodes,
         "total_factors": int(graph.size()),
     }
     return graph, counts

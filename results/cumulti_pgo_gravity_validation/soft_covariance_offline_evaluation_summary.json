@@ -1,0 +1,96 @@
+{
+  "created_UTC": "2026-11-16T11:37:32.231081+00:00",
+  "offline_GT_rows": 16,
+  "map_evaluation_completed": true,
+  "free_baseline_reproduction": {
+    "passed": true,
+    "absolute_tolerance": 1e-06,
+    "checks": [
+      {
+        "metric_type": "ATE_joint_rigid_alignment",
+        "scope": "joint",
+        "column": "ATE_RMSE_m",
+        "absolute_delta": 4.0472514228895307e-11
+      },
+      {
+        "metric_type": "ATE_joint_rigid_alignment",
+        "scope": "robot1",
+        "column": "ATE_RMSE_m",
+        "absolute_delta": 1.3207213100940862e-10
+      },
+      {
+        "metric_type": "ATE_joint_rigid_alignment",
+        "scope": "robot3",
+        "column": "ATE_RMSE_m",
+        "absolute_delta": 8.601119816376013e-11
+      },
+      {
+        "metric_type": "RPE",
+        "scope": "robot1",
+        "column": "translation_RMSE_m",
+        "absolute_delta": 5.920597345721035e-12
+      },
+      {
+        "metric_type": "RPE",
+        "scope": "robot1",
+        "column": "rotation_RMSE_deg",
+        "absolute_delta": 6.483702463810914e-14
+      },
+      {
+        "metric_type": "RPE",
+        "scope": "robot3",
+        "column": "translation_RMSE_m",
+        "absolute_delta": 3.2525093729418586e-12
+      },
+      {
+        "metric_type": "RPE",
+        "scope": "robot3",
+        "column": "rotation_RMSE_deg",
+        "absolute_delta": 3.375077994860476e-14
+      },
+      {
+        "metric_type": "RPE",
+        "scope": "combined",
+        "column": "translation_RMSE_m",
+        "absolute_delta": 6.181721801112872e-13
+      },
+      {
+        "metric_type": "RPE",
+        "scope": "combined",
+        "column": "rotation_RMSE_deg",
+        "absolute_delta": 4.1744385725905886e-14
+      }
+    ],
+    "expected_sha256": "22a41b2340e4e048baee5b0b217487260d38b01f3414c6cf874db347199aef0a"
+  },
+  "free_map_reproduction": {
+    "passed": true,
+    "absolute_tolerance_m": 1e-06,
+    "checks": [
+      {
+        "column": "median_m",
+        "absolute_delta": 4.476419235288631e-11
+      },
+      {
+        "column": "p90_m",
+        "absolute_delta": 3.4989966479770374e-10
+      },
+      {
+        "column": "p95_m",
+        "absolute_delta": 1.2946088645549025e-11
+      },
+      {
+        "column": "points_robot1",
+        "absolute_delta": 0
+      },
+      {
+        "column": "points_robot3",
+        "absolute_delta": 0
+      }
+    ],
+    "expected_sha256": "32f2877cd4f0e3115bc45e90cde4810bef8e64826b97343de3eb6ea51944078d"
+  },
+  "pre_gt_decision_unchanged": true,
+  "solver_rerun": false,
+  "GT_used": true
+}

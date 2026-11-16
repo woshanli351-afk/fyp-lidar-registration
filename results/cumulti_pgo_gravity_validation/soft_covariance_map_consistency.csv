@@ -1,0 +1,3 @@
+variant,median_m,p90_m,p95_m,points_robot1,points_robot3,definition
+free_pose3_replay,3.0305062789563957,92.69284619103786,119.27754248994867,280707,665213,symmetric nearest-neighbour distance after per-robot voxelization
+ekf_gravity_soft_cov_x8,3.0182375851727725,100.94467279876582,125.19823426601019,279602,662194,symmetric nearest-neighbour distance after per-robot voxelization

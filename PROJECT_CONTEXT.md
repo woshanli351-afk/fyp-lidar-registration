@@ -37,10 +37,13 @@
   RMSE 从 19.608 m 降到 13.737 m，Robot3 scoped ATE 从 22.271 m 降到
   15.798 m；combined RPE 基本不变，但地图 NN p90/p95 恶化 8.91%/4.98%。
   因此硬因子仍是诊断上界，历史 6003 节点/88 回环结果也不得替代当前图。
-- 软因子输入审计已从 Robot3 原始 ROS 2 Odometry 复现 3946/3946 个稳定段
-  姿态协方差。roll/pitch 倾斜 sigma 代理中位数 0.047°、p95 0.093°，而
-  Stage 12C 保存的三轴 trace 中位数有 98.68% 来自 yaw，不能作为重力噪声。
-  Robot1 当前缺少原始 IMU/GPS 归档，尚未冻结软因子权重或运行 GT 评价。
+- 软因子输入审计已从 Robot1/Robot3 原始 ROS 2 Odometry 解码 1849/1850、
+  3946/3946 个稳定段分轴协方差。Robot1 KF1199 的 header 差 52.034 ms，
+  超过冻结门槛，未放宽阈值而是省略该节点因子；总覆盖率 5795/5796。
+- GT-free 软因子实验预声明 `1/2/4/8` 协方差膨胀尺度并冻结最弱的 ×8。
+  soft ×8 将 joint ATE RMSE 从 19.608 m 降到 13.725 m，Robot3 scoped ATE
+  降到 15.785 m，但地图 NN p90/p95 仍恶化 8.90%/4.96%，几乎复现硬诊断。
+  它没有通过地图尾部门槛，不进入最终后端、原生因子/iSAM2 或 Demo。
 
 ## 冻结条件
 
@@ -54,4 +57,6 @@ Robot2→Robot3（2,230 查询）与 Robot3→Robot2（4,180 查询）为 held-o
 先读 README、docs/HANDOFF、NEXT_STEPS、CHANGELOG、docs/INTERFACES，再查最新 commit。
 读取报告中的统计时区分 query/pair/event、protocol FP 与 mapping hazard。
 在线 manifest/GICP 输出无 GT；离线评价决策含 GT 字段，不能直接作为线上接口使用。
+Gravity 的尺度选择同样必须先在 GT-free 阶段冻结；当前 soft ×8 已被离线地图
+门槛否决，不得根据该 GT 结果回头调尺度。
 每次修改记录相关测试及未能完成的真实数据验证，并提交、推送该任务变更。

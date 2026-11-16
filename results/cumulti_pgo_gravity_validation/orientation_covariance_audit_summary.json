@@ -9,19 +9,68 @@
     "message_type": "nav_msgs/msg/Odometry",
     "orientation_block": "fixed-axis rotation X/Y/Z covariance",
     "saved_stage12c_proxy": "trace of the 3x3 orientation covariance block",
-    "tilt_sigma_proxy": "sqrt((roll_variance + pitch_variance) / 2)"
+    "tilt_sigma_proxy": "sqrt((roll_variance + pitch_variance) / 2)",
+    "timestamp_association": "nearest EKF bag timestamp, then header timestamp; both within 0.05 s"
+  },
+  "robot1": {
+    "status": "PARTIAL_TILT_COVARIANCE_AVAILABLE",
+    "stable_rows": 1850,
+    "decoded_rows": 1849,
+    "decoded_coverage_fraction": 0.9994594594594595,
+    "zero_trace_rows": 0,
+    "negative_diagonal_rows": 0,
+    "non_psd_rows": 0,
+    "raw_archive": {
+      "filename": "robot1_main_campus_imu_gps.zip",
+      "size_bytes": 137411022,
+      "sha256": "43cd171d091f656a55265f688dd9cae94215957e479d3466b536dd0f4790a3b4"
+    },
+    "gtfree_timestamp_input": {
+      "filename": "keyframes.csv",
+      "sha256": "a5720e59d2b93c27fc6f48e99fbd4e73062ec7b129334b8c7bd9aea75b15b690"
+    },
+    "missing_node": {
+      "keyframe_id": 1199,
+      "reason": "HEADER_OUT_OF_WINDOW",
+      "bag_match_error_s": 0.001617562,
+      "header_match_error_s": 0.05203446
+    },
+    "quantiles": {
+      "tilt_sigma_proxy_deg": {
+        "q00": 0.014732747230293552,
+        "q05": 0.023907337553717187,
+        "q50": 0.04137262838078269,
+        "q95": 0.07214038986830298,
+        "q99": 0.09235195429487644,
+        "q100": 0.09704369933393872
+      },
+      "yaw_variance_share": {
+        "q00": 0.907893498071604,
+        "q05": 0.956179152004469,
+        "q50": 0.9940748446296991,
+        "q95": 0.9992958859965326,
+        "q99": 0.9997955348622435,
+        "q100": 0.9998438368844882
+      }
+    }
   },
   "robot3": {
     "status": "FULL_TILT_COVARIANCE_AVAILABLE",
     "stable_rows": 3946,
     "decoded_rows": 3946,
-    "missing_decoded_rows": 0,
+    "decoded_coverage_fraction": 1.0,
     "zero_trace_rows": 0,
     "negative_diagonal_rows": 0,
     "non_psd_rows": 0,
-    "maximum_saved_trace_delta_rad2": 9.996344030316351e-17,
-    "saved_trace_reproduction_passed": true,
-    "stability_csv_sha256": "401ec248a859618269a636d390133b0621c4baa7d34cd9bccd12d4ffc85b35a1",
+    "raw_archive": {
+      "filename": "robot3_main_campus_imu_gps.zip",
+      "size_bytes": 289456005,
+      "sha256": "da7fb9fe2d650b9747f2de0dedb4c6c06f79a109d916cd4e9ee5b172e43e50ed"
+    },
+    "gtfree_timestamp_input": {
+      "filename": "keyframes.csv",
+      "sha256": "b88fe6212a1f8d4bbe13d5ac0bb04f4637381cfb57089efbe34ff15e59e734ea"
+    },
     "quantiles": {
       "tilt_sigma_proxy_deg": {
         "q00": 0.015956320941162987,
@@ -31,14 +80,6 @@
         "q99": 0.11000534916244784,
         "q100": 0.15531754568952386
       },
-      "yaw_sigma_deg": {
-        "q00": 0.10929265168404417,
-        "q05": 0.16009778319051424,
-        "q50": 0.573969584136306,
-        "q95": 2.7766270709703895,
-        "q99": 3.5620001613048644,
-        "q100": 4.9732938148917105
-      },
       "yaw_variance_share": {
         "q00": 0.8272648796175661,
         "q05": 0.9336334522848604,
@@ -47,19 +88,31 @@
         "q99": 0.9993928436335484,
         "q100": 0.9996403591564548
       }
+    },
+    "prior_stage12c_trace_reproduction": {
+      "passed": true,
+      "maximum_absolute_delta_rad2": 9.996344030316351e-17,
+      "stability_csv_sha256": "401ec248a859618269a636d390133b0621c4baa7d34cd9bccd12d4ffc85b35a1"
     }
   },
-  "robot1": {
-    "status": "RAW_AXIS_COVARIANCE_UNAVAILABLE",
-    "stable_rows": 1850,
-    "matched_stage12c_rows": 1849,
-    "available_field": "orientation covariance trace only",
-    "raw_source_search_scope": "local workspace and server project data directories",
-    "blocking_input": "raw imu_gps archive or per-keyframe roll/pitch/yaw covariance export"
+  "combined_graph": {
+    "nodes": 5796,
+    "decoded_covariance_nodes": 5795,
+    "coverage_fraction": 0.9998274672187716,
+    "gravity_factors_after_anchor_and_missing_node": 5794,
+    "missing_covariance_policy": "omit gravity factor for unmatched node",
+    "base_tilt_sigma_deg": {
+      "min": 0.014732747230293552,
+      "median": 0.044932958562967064,
+      "p95": 0.08795539312119087,
+      "p99": 0.10786880405315176,
+      "max": 0.15531754568952388
+    }
   },
-  "policy_decision": "BLOCK_SOFT_FACTOR_UNTIL_ROBOT1_AXIS_COVARIANCE_IS_AUDITED",
+  "trace_check_caveat": "For the reconstructed timestamp path, the trace is recomputed from the same decoded raw message and is a self-consistency check, not an independent Stage 12C reproduction.",
+  "policy_decision": "SOFT_FACTOR_INPUTS_ACCEPTED_WITH_ONE_NODE_OMITTED",
   "rejected_input": "Stage 12C orientation trace as a tilt-noise estimate",
-  "reason": "Robot3 median yaw variance share is 98.675%; the trace is dominated by yaw.",
+  "reason": "The three-axis trace is dominated by yaw variance; roll/pitch terms must be used separately.",
   "hard_diagnostic_sigma_deg": 0.01,
   "hard_sigma_interpretation": "diagnostic bound, not covariance-derived production noise"
 }

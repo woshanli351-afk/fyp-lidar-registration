@@ -1,0 +1,119 @@
+{
+  "inflation_scale": 8.0,
+  "factor_counts": {
+    "nodes": 5796,
+    "odometry_factors": 5794,
+    "loop_factors": 75,
+    "anchor_priors": 1,
+    "gravity_factors": 5794,
+    "gravity_covariance_missing_nodes": 1,
+    "total_factors": 11664
+  },
+  "solver": {
+    "initial_graph_error": 3843.9860057049373,
+    "final_graph_error": 25.38779223935396,
+    "relative_reduction": 0.9933954514398139,
+    "runtime_s": 61.851133526302874,
+    "iterations": 7,
+    "max_iterations": 100,
+    "normal_return": true
+  },
+  "loop_residuals": {
+    "translation_m": {
+      "count": 75,
+      "median": 0.05563298391496616,
+      "p90": 0.13660790962196684,
+      "p95": 0.19401882032238046,
+      "p99": 0.34208722876278064,
+      "max": 0.3449922135093895
+    },
+    "rotation_deg": {
+      "count": 75,
+      "median": 0.8403212650311167,
+      "p90": 1.444200630030069,
+      "p95": 1.6722247768767733,
+      "p99": 2.524677180375982,
+      "max": 2.531295179885933
+    },
+    "definition": "E = Z^-1 X_query^-1 X_candidate"
+  },
+  "gravity": {
+    "ekf_gravity_deviation_deg": {
+      "count": 5796,
+      "median": 1.0316186218701491e-05,
+      "p90": 0.00012393253000594185,
+      "p95": 0.00027128614964724764,
+      "p99": 0.003934372022095367,
+      "max": 0.042240285258460124
+    },
+    "common_up_disagreement_deg": {
+      "count": 5796,
+      "median": 0.352368936504895,
+      "p90": 0.35238058809068595,
+      "p95": 0.3523982510579736,
+      "p99": 0.3524799212884122,
+      "max": 0.37167991672529294
+    },
+    "per_robot": {
+      "robot1": {
+        "ekf_gravity_deviation_deg": {
+          "count": 1850,
+          "median": 2.3760372916431773e-05,
+          "p90": 0.00012373710148487499,
+          "p95": 0.0003549362137400913,
+          "p99": 0.005852291641543139,
+          "max": 0.01912649538236347
+        },
+        "common_up_disagreement_deg": {
+          "count": 1850,
+          "median": 2.3760372916431773e-05,
+          "p90": 0.00012373710148487499,
+          "p95": 0.0003549362137400913,
+          "p99": 0.005852291641543139,
+          "max": 0.01912649536330798
+        }
+      },
+      "robot3": {
+        "ekf_gravity_deviation_deg": {
+          "count": 3946,
+          "median": 5.193302344775283e-06,
+          "p90": 0.0001242467742587307,
+          "p95": 0.0002453348188737092,
+          "p99": 0.0030963433877089336,
+          "max": 0.042240285258460124
+        },
+        "common_up_disagreement_deg": {
+          "count": 3946,
+          "median": 0.35237056284844637,
+          "p90": 0.352389774763186,
+          "p95": 0.3524100884141724,
+          "p99": 0.3524988595654165,
+          "max": 0.37167991672529294
+        }
+      }
+    },
+    "definition": "sensor-frame EKF up is R_local^T*[0,0,1]; mapped by optimized pose. Deviation compares optimized versus first-loop-initialized EKF up; common disagreement uses Robot1 anchor up."
+  },
+  "continuity": {
+    "translation_step_m": {
+      "count": 5794,
+      "median": 0.701159768386983,
+      "p90": 0.9066877838868955,
+      "p95": 0.9766624907070582,
+      "p99": 1.1197191345155864,
+      "max": 1.7024053229314566
+    },
+    "relative_rotation_deg": {
+      "count": 5794,
+      "median": 1.1220316281623806,
+      "p90": 5.95942709902913,
+      "p95": 9.686516181825617,
+      "p99": 16.369715801477952,
+      "max": 29.895948077450754
+    },
+    "new_steps_over_5m": 0,
+    "new_steps_over_100m": 0
+  },
+  "trajectory_sha256": "b8347792a86eb3fdbd478f3c7c42a1b0f572a6d964b70db4f6294328fa003d6b",
+  "GT_used": false
+}

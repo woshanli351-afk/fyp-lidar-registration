@@ -1,0 +1,68 @@
+{
+  "created_UTC": "2026-11-16T11:33:37.492697+00:00",
+  "decision": "SOFT_COVARIANCE_GT_FREE_CANDIDATE_FROZEN",
+  "selected_variant": "ekf_gravity_soft_cov_x8",
+  "selected_trajectory_sha256": "b8347792a86eb3fdbd478f3c7c42a1b0f572a6d964b70db4f6294328fa003d6b",
+  "selection_rule": "Among variants meeting every GT-free criterion, freeze the largest inflation scale (weakest gravity factor). Do not use GT to choose a scale.",
+  "checks": {
+    "ekf_gravity_soft_cov_x1": {
+      "gravity_p95_at_or_below_target": true,
+      "loop_translation_p95_within_increase_limit": true,
+      "no_new_adjacent_steps_over_5m": true
+    },
+    "ekf_gravity_soft_cov_x2": {
+      "gravity_p95_at_or_below_target": true,
+      "loop_translation_p95_within_increase_limit": true,
+      "no_new_adjacent_steps_over_5m": true
+    },
+    "ekf_gravity_soft_cov_x4": {
+      "gravity_p95_at_or_below_target": true,
+      "loop_translation_p95_within_increase_limit": true,
+      "no_new_adjacent_steps_over_5m": true
+    },
+    "ekf_gravity_soft_cov_x8": {
+      "gravity_p95_at_or_below_target": true,
+      "loop_translation_p95_within_increase_limit": true,
+      "no_new_adjacent_steps_over_5m": true
+    }
+  },
+  "comparison": {
+    "free_pose3_replay": {
+      "inflation_scale": null,
+      "common_up_p95_deg": 12.799620425744973,
+      "loop_translation_p95_m": 0.19620215705401595,
+      "new_steps_over_5m": 0,
+      "runtime_s": 0.34784120973199606
+    },
+    "ekf_gravity_soft_cov_x1": {
+      "inflation_scale": 1.0,
+      "common_up_p95_deg": 0.35237085419909314,
+      "loop_translation_p95_m": 0.1940240748285442,
+      "new_steps_over_5m": 0,
+      "runtime_s": 56.077834288589656
+    },
+    "ekf_gravity_soft_cov_x2": {
+      "inflation_scale": 2.0,
+      "common_up_p95_deg": 0.3523721812512262,
+      "loop_translation_p95_m": 0.19402380838556854,
+      "new_steps_over_5m": 0,
+      "runtime_s": 57.52703168801963
+    },
+    "ekf_gravity_soft_cov_x4": {
+      "inflation_scale": 4.0,
+      "common_up_p95_deg": 0.3523771704351162,
+      "loop_translation_p95_m": 0.19402275728253043,
+      "new_steps_over_5m": 0,
+      "runtime_s": 60.57895570155233
+    },
+    "ekf_gravity_soft_cov_x8": {
+      "inflation_scale": 8.0,
+      "common_up_p95_deg": 0.3523982510579736,
+      "loop_translation_p95_m": 0.19401882032238046,
+      "new_steps_over_5m": 0,
+      "runtime_s": 61.851133526302874
+    }
+  },
+  "offline_evaluation_allowed_only_for_selected_variant": true,
+  "GT_used": false
+}

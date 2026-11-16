@@ -24,6 +24,8 @@ ROBOTS = ("robot1", "robot3")
 POSE_COLUMNS = ["robot_id", "keyframe_id", "timestamp", "tx", "ty", "tz", "qx", "qy", "qz", "qw"]
 GT_COLUMNS = ["keyframe_id", "x", "y", "z", "qx", "qy", "qz", "qw", "lidar_file"]
 VARIANTS = ("free_pose3_replay", "ekf_gravity_hard_diagnostic")
+FREE_VARIANT = VARIANTS[0]
+DEFAULT_CANDIDATE_VARIANT = VARIANTS[1]
 
 
 def utc_now() -> str:
@@ -312,13 +314,14 @@ def freeze_before_gt(args: argparse.Namespace, output: Path) -> dict[str, object
     pre_gt = json.loads(args.pre_gt_decision.read_text(encoding="utf-8"))
     if pre_gt.get("GT_used") is not False:
         raise ValueError("pre-GT decision does not assert GT_used=false")
+    candidate_label = getattr(args, "candidate_label", DEFAULT_CANDIDATE_VARIANT)
     value = {
         "created_UTC": utc_now(),
         "phase": "OFFLINE_EVALUATION_INPUTS_FROZEN_BEFORE_GT_LOAD",
         "pre_gt_decision": {"path": str(args.pre_gt_decision.resolve()), "sha256": sha256(args.pre_gt_decision)},
         "trajectories": {
-            "free_pose3_replay": {"path": str(args.free_trajectory.resolve()), "sha256": sha256(args.free_trajectory)},
-            "ekf_gravity_hard_diagnostic": {
+            FREE_VARIANT: {"path": str(args.free_trajectory.resolve()), "sha256": sha256(args.free_trajectory)},
+            candidate_label: {
                 "path": str(args.gravity_trajectory.resolve()), "sha256": sha256(args.gravity_trajectory)
             },
         },
@@ -344,19 +347,23 @@ def freeze_before_gt(args: argparse.Namespace, output: Path) -> dict[str, object
 def run(args: argparse.Namespace) -> None:
     output = args.output_dir.resolve()
     output.mkdir(parents=True, exist_ok=True)
+    candidate_label = getattr(args, "candidate_label", DEFAULT_CANDIDATE_VARIANT)
+    if not candidate_label or candidate_label == FREE_VARIANT:
+        raise ValueError("candidate label must be non-empty and differ from free baseline label")
     freeze = freeze_before_gt(args, output)
+    variants = (FREE_VARIANT, candidate_label)
     trajectories = {
-        "free_pose3_replay": load_trajectory(args.free_trajectory),
-        "ekf_gravity_hard_diagnostic": load_trajectory(args.gravity_trajectory),
+        FREE_VARIANT: load_trajectory(args.free_trajectory),
+        candidate_label: load_trajectory(args.gravity_trajectory),
     }
-    if set(zip(trajectories[VARIANTS[0]].robot_id, trajectories[VARIANTS[0]].keyframe_id)) != set(
-        zip(trajectories[VARIANTS[1]].robot_id, trajectories[VARIANTS[1]].keyframe_id)
+    if set(zip(trajectories[variants[0]].robot_id, trajectories[variants[0]].keyframe_id)) != set(
+        zip(trajectories[variants[1]].robot_id, trajectories[variants[1]].keyframe_id)
     ):
         raise ValueError("variant trajectories do not cover the same semantic nodes")
 
     gt_by_robot = {}
     for robot, path in (("robot1", args.robot1_keyframes), ("robot3", args.robot3_keyframes)):
-        ids = trajectories[VARIANTS[0]][trajectories[VARIANTS[0]].robot_id.eq(robot)].keyframe_id.astype(int)
+        ids = trajectories[FREE_VARIANT][trajectories[FREE_VARIANT].robot_id.eq(robot)].keyframe_id.astype(int)
         gt_by_robot[robot] = load_gt_keyframes(path, ids)
 
     metric_rows = []
@@ -368,7 +375,7 @@ def run(args: argparse.Namespace) -> None:
 
     baseline_audit = None
     if args.expected_free_metrics:
-        baseline_audit = expected_metric_audit(metrics, args.expected_free_metrics, VARIANTS[0], args.reproduction_tolerance)
+        baseline_audit = expected_metric_audit(metrics, args.expected_free_metrics, FREE_VARIANT, args.reproduction_tolerance)
         write_json(output / "free_baseline_reproduction.json", baseline_audit)
         if not baseline_audit["passed"]:
             raise AssertionError("free baseline offline metrics do not reproduce the frozen Stage12D results")
@@ -389,7 +396,7 @@ def run(args: argparse.Namespace) -> None:
         map_frame = pd.DataFrame(map_rows)
         map_frame.to_csv(output / "map_consistency.csv", index=False)
         if args.expected_free_map:
-            map_audit = expected_map_audit(map_frame, args.expected_free_map, VARIANTS[0], args.reproduction_tolerance)
+            map_audit = expected_map_audit(map_frame, args.expected_free_map, FREE_VARIANT, args.reproduction_tolerance)
             write_json(output / "free_map_reproduction.json", map_audit)
             if not map_audit["passed"]:
                 raise AssertionError("free baseline map metrics do not reproduce the frozen Stage12D results")
@@ -421,6 +428,11 @@ def parser() -> argparse.ArgumentParser:
     command.add_argument("--pre-gt-decision", type=Path, required=True)
     command.add_argument("--free-trajectory", type=Path, required=True)
     command.add_argument("--gravity-trajectory", type=Path, required=True)
+    command.add_argument(
+        "--candidate-label",
+        default=DEFAULT_CANDIDATE_VARIANT,
+        help="Output label for the frozen candidate trajectory (hard diagnostic or soft variant).",
+    )
     command.add_argument("--robot1-keyframes", type=Path, required=True)
     command.add_argument("--robot3-keyframes", type=Path, required=True)
     command.add_argument("--robot1-lidar-root", type=Path)

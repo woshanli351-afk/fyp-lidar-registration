@@ -105,5 +105,35 @@ python src/cumulti/audit_pgo_orientation_covariance.py \
   --output-dir outputs/cumulti_pgo_orientation_covariance_audit
 ```
 
+如果冻结 Stage 12C 稳定性 CSV 不在当前机器，可从 processed keyframes 的
+GT-free 时间戳重建相同的 50 ms 关联；审计器只加载 ID 与 timestamp 三列：
+
+```bash
+python src/cumulti/audit_pgo_orientation_covariance.py \
+  --robot robot1 --stable-start 150 \
+  --keyframes-csv /path/to/robot1/keyframes.csv \
+  --imu-gps-archive /path/to/robot1_main_campus_imu_gps.zip \
+  --output-dir outputs/robot1_covariance_audit
+```
+
 逐 keyframe CSV 只保留在 `outputs/`。公开仓库保存聚合分位数、覆盖率、trace
 复现和 PSD 判定；不保存原始 ROS 包或完整逐帧协方差。
+
+## PGO 协方差软重力实验
+
+在两个机器人审计输出就绪后，先运行完全 GT-free 的有限尺度选择：
+
+```bash
+external/pgo-env/bin/python src/cumulti/run_pgo_soft_gravity_validation.py \
+  --local-trajectory /path/to/clean_local_trajectory.csv \
+  --loop-edges /path/to/ordered_rank1_clean_loops.csv \
+  --baseline-trajectory /path/to/clean_all75_gtsam_trajectory.csv \
+  --covariance-csv outputs/robot1_covariance_audit/robot1_orientation_covariance_by_keyframe.csv \
+  --covariance-csv outputs/robot3_covariance_audit/robot3_orientation_covariance_by_keyframe.csv \
+  --scales 1 2 4 8 \
+  --output-dir outputs/cumulti_pgo_soft_gravity_pre_gt
+```
+
+只允许对 `pre_gt_decision.json` 中冻结的候选运行离线 evaluator。原始实验选择
+soft ×8；不得根据其 GT/地图结果回头修改尺度。该候选最终没有通过地图尾部采用
+门槛，因此当前命令用于复现诊断，不是 Demo 或最终后端入口。
