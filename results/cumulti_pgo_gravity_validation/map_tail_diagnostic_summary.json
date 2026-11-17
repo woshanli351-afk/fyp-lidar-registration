@@ -1,0 +1,138 @@
+{
+  "date": "2026-11-17",
+  "GT_used": false,
+  "candidate": "ekf_gravity_soft_cov_x8",
+  "graph": {
+    "nodes": 5796,
+    "accepted_loops": 75
+  },
+  "configuration": {
+    "whole_map_frame_stride": 10,
+    "point_stride": 16,
+    "range_m": [1.0, 60.0],
+    "voxel_m": 0.5,
+    "loop_local_sensitivity_point_strides": [8, 16, 32],
+    "loop_local_sensitivity_voxels_m": [0.25, 0.5, 1.0]
+  },
+  "input_sha256": {
+    "free_trajectory": "deef9fd11ad5db4cf597961ef596c08cd3a5f48c39d5a2dc4b6f7d34171534c0",
+    "candidate_trajectory": "b8347792a86eb3fdbd478f3c7c42a1b0f572a6d964b70db4f6294328fa003d6b",
+    "loop_edges": "69c4ed4c744392edba309b92a5b84abc9b34aa4200c37542d56881a0f114d44e",
+    "robot1_keyframes": "a5720e59d2b93c27fc6f48e99fbd4e73062ec7b129334b8c7bd9aea75b15b690",
+    "robot3_keyframes": "b88fe6212a1f8d4bbe13d5ac0bb04f4637381cfb57089efbe34ff15e59e734ea"
+  },
+  "whole_map_reproduction": {
+    "passed": true,
+    "free": {
+      "median_m": 3.0305062789563957,
+      "p90_m": 92.69284619103786,
+      "p95_m": 119.27754248994867,
+      "points_robot1": 280707,
+      "points_robot3": 665213
+    },
+    "soft_x8": {
+      "median_m": 3.0182375851727725,
+      "p90_m": 100.94467279876582,
+      "p95_m": 125.19823426601019,
+      "points_robot1": 279602,
+      "points_robot3": 662194
+    }
+  },
+  "directional_decomposition": {
+    "robot1_to_robot3": {
+      "interpretation": "better-covered direction; 94% of Robot1 voxels are within 5 m of Robot3",
+      "free": {
+        "median_m": 1.280741289066664,
+        "p90_m": 3.6653144285128754,
+        "p95_m": 5.682005658155324,
+        "fraction_within_5m": 0.9397877502164178,
+        "fraction_within_10m": 0.9826046375758353
+      },
+      "soft_x8": {
+        "median_m": 1.2604507897808583,
+        "p90_m": 3.5985804698113335,
+        "p95_m": 5.520874695028955,
+        "fraction_within_5m": 0.942278667534567,
+        "fraction_within_10m": 0.9846031144269354
+      },
+      "soft_relative_change_percent": {
+        "median": -1.5842777506292705,
+        "p90": -1.8206885112614368,
+        "p95": -2.835811381058717
+      }
+    },
+    "robot3_to_robot1": {
+      "interpretation": "coverage-limited direction; only 40% of Robot3 voxels are within 5 m of Robot1",
+      "free": {
+        "median_m": 20.628414793275294,
+        "p90_m": 108.15527020222292,
+        "p95_m": 126.90023124502031,
+        "fraction_within_5m": 0.3996419192048261,
+        "fraction_within_10m": 0.4371291601336715
+      },
+      "soft_x8": {
+        "median_m": 22.57939380519989,
+        "p90_m": 114.9152426802526,
+        "p95_m": 132.70779913971717,
+        "fraction_within_5m": 0.3992470484480379,
+        "fraction_within_10m": 0.434312301228945
+      },
+      "soft_relative_change_percent": {
+        "median": 9.457726303625623,
+        "p90": 6.250247875475923,
+        "p95": 4.5764833032365
+      }
+    }
+  },
+  "tail_attribution": {
+    "threshold_m": 92.69284619103786,
+    "soft_points_above_threshold": 111959,
+    "fraction_from_robot3": 1.0,
+    "fraction_more_than_300_keyframes_from_nearest_loop_endpoint": 1.0,
+    "robot3_loop_endpoint_gap": {
+      "from_keyframe": 252,
+      "to_keyframe": 2481,
+      "gap_keyframes": 2229
+    },
+    "robot3_tail_share_by_keyframe_band": {
+      "0_to_999": 0.332461,
+      "1000_to_1999": 0.667539,
+      "2000_and_later": 0.0
+    }
+  },
+  "accepted_loop_local_map": {
+    "definition": "symmetric NN between transformed endpoint scans for each of the 75 accepted loops",
+    "free": {
+      "pooled_median_m": 0.4394729344129641,
+      "pooled_p90_m": 1.7740662168200279,
+      "pooled_p95_m": 2.6038178741323437,
+      "fraction_within_5m": 0.9865462761355296
+    },
+    "soft_x8": {
+      "pooled_median_m": 0.44991173469054324,
+      "pooled_p90_m": 1.7824602833351297,
+      "pooled_p95_m": 2.6131384646448543,
+      "fraction_within_5m": 0.9863832175219106
+    },
+    "soft_p95_delta_m": 0.009320590512510663,
+    "soft_p95_relative_change_percent": 0.35795861934531104,
+    "loops_with_lower_p95": 35,
+    "loops_with_higher_p95": 40,
+    "five_setting_sensitivity": {
+      "all_p95_deltas_positive": true,
+      "minimum_delta_m": 0.009320590512510663,
+      "maximum_delta_m": 0.02171863676077712,
+      "relative_change_percent_range": [0.3039134297982549, 1.158604920227668]
+    }
+  },
+  "loop_residual_change": {
+    "translation_delta_median_m": 0.0016937273922868,
+    "translation_delta_p95_m": 0.01044634485452193,
+    "rotation_delta_median_deg": 0.3009611858117136,
+    "rotation_delta_p95_deg": 0.8680812859973278,
+    "rotation_delta_max_deg": 1.1527984696867928
+  },
+  "diagnosis": "The previously reported 100-125 m whole-map p90/p95 is dominated by Robot3-only coverage far from any accepted loop, not by the actual overlap regions. It is not a valid standalone map-alignment gate for these unequal routes.",
+  "corrected_decision": "SOFT_GRAVITY_REMAINS_OFFLINE_ONLY",
+  "decision_reason": "The catastrophic whole-map tail regression is a coverage-metric artifact, but the accepted-loop local p95 is consistently 9-22 mm higher across five sampling settings and the Python CustomFactor runtime is still about 62 s. Under the frozen no-worsening rule, soft gravity is not promoted to the final backend or demo."
+}

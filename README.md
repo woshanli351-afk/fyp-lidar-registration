@@ -15,10 +15,11 @@ CU-Multi 依赖模块来自团队代码，具体来源见 [代码来源](docs/PR
 4. [PGO 重力保持诊断](docs/CUMULTI_PGO_GRAVITY_VALIDATION.md)
 5. [软重力因子输入审计](docs/CUMULTI_PGO_SOFT_GRAVITY_INPUT_AUDIT.md)
 6. [协方差软重力验证](docs/CUMULTI_PGO_SOFT_GRAVITY_VALIDATION.md)
-7. [PGO 离线精度评价状态](docs/CUMULTI_PGO_OFFLINE_EVALUATION.md)
-8. [Robot1/Robot3 数据质量评估](docs/CUMULTI_ROBOT13_DATA_QUALITY_ASSESSMENT.md)
-9. [运行指南](docs/RUNNING.md) 与 [候选/配准接口](docs/INTERFACES.md)
-10. [下一步](NEXT_STEPS.md) 与 [更新记录](CHANGELOG.md)
+7. [PGO 地图尾部诊断](docs/CUMULTI_PGO_MAP_TAIL_DIAGNOSTIC.md)
+8. [PGO 离线精度评价状态](docs/CUMULTI_PGO_OFFLINE_EVALUATION.md)
+9. [Robot1/Robot3 数据质量评估](docs/CUMULTI_ROBOT13_DATA_QUALITY_ASSESSMENT.md)
+10. [运行指南](docs/RUNNING.md) 与 [候选/配准接口](docs/INTERFACES.md)
+11. [下一步](NEXT_STEPS.md) 与 [更新记录](CHANGELOG.md)
 
 ## 已有结果
 
@@ -39,18 +40,21 @@ Stage 11 原始实验完成于 2026-09-23，当前发布只整理代码和历史
 偏差 p95 从 12.800° 降至 0.352°，joint ATE RMSE 从 19.608 m 降至
 13.737 m，Robot3 scoped ATE 从 22.271 m 降至 15.798 m。固定间隔 RPE
 基本不变，但跨机器人地图 NN p95 从 119.278 m 上升到 125.215 m。因此硬重力
-约束仍是诊断上界，不是已经验收的最终后端；下一步应测试协方差支持的软因子，
-并把地图尾部不恶化作为采用门槛。
+约束仍是诊断上界，不是已经验收的最终后端；后续软因子和尾部来源复核结果见下。
 
 2026-11-16 已补齐 Robot1 原始归档并完成软因子输入与完整实验。Robot1/Robot3
 稳定段分别解码 1849/1850、3946/3946 个分轴协方差；唯一缺失的 Robot1
 KF1199 超过冻结 header 时间门槛 2.034 ms，按预声明策略省略因子。GT-free
 阶段在 `1/2/4/8` 中冻结最弱的 soft ×8。它将 joint ATE RMSE 从 19.608 m
-降至 13.725 m，但地图 NN p90/p95 仍恶化 8.90%/4.96%，几乎复现硬诊断。
-因此 Gravity 确认了倾斜失效模式，却未通过地图尾部采用门槛，不进入最终后端
-或 Demo。
+降至 13.725 m。后续 GT-free 尾部诊断确认，原全地图 NN p90/p95 的
+8.90%/4.96% 回退主要来自 Robot3 独有、且距闭环端点超过 300 keyframe 的
+路线，不能单独作为部分重叠地图的对齐门槛。75 个闭环局部 p95 在五组采样
+设置下仍一致增加 9–22 mm，加上当前约 62 s 求解成本，因此 Gravity 继续只
+作离线诊断，不进入最终后端或 Demo。
 
 ![Soft covariance gravity comparison](results/cumulti_pgo_gravity_validation/soft_covariance_comparison.png)
+
+![PGO map-tail diagnostic](results/cumulti_pgo_gravity_validation/map_tail_diagnostic.png)
 
 ![PGO gravity offline comparison](results/cumulti_pgo_gravity_validation/offline_gt_map_comparison.png)
 
@@ -104,6 +108,7 @@ python -m unittest discover -s src/cumulti -p test_pgo_gravity_validation.py -v
 python -m unittest discover -s src/cumulti -p test_pgo_gravity_offline.py -v
 python -m unittest discover -s src/cumulti -p test_pgo_orientation_covariance.py -v
 python -m unittest discover -s src/cumulti -p test_pgo_soft_gravity_validation.py -v
+python -m unittest discover -s src/cumulti -p test_pgo_map_tail.py -v
 ```
 
 实际配准再安装 `requirements-gicp.txt`；CVTNet 再安装 `requirements-cvtnet.txt` 及官方仓库依赖。

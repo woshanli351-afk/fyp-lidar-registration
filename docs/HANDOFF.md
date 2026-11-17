@@ -1,6 +1,6 @@
 # FYP 项目交接文档
 
-更新时间：2026-11-16。
+更新时间：2026-11-17。
 
 本文用于在聊天记录缺失时恢复项目状态。接手人应先阅读本页，再按文中链接查看证据和运行说明。
 
@@ -29,10 +29,10 @@
 | Rank-1/Top-3/选择性策略 | 已比较 | Rank-1 GICP 为默认；Top-3 仅作离线或失败恢复；选择性策略不作为统一默认。 |
 | Robot1/Robot3 数据质量 | 已完成专项复核 | 完整 EKF 启动段不可用于建图；必须使用冻结稳定起点。 |
 | Progressive Demo V2 | 已完成并可本地运行 | 是使用冻结结果的静态离线重放，不是浏览器内实时运行 SC/GICP/PGO。 |
-| CU-Multi batch PGO | 硬/软 Gravity 完整评价已完成 | 协方差 soft ×8 改善 ATE，但地图 NN p90/p95 仍恶化；Gravity 不进入最终后端或 Demo。 |
+| CU-Multi batch PGO | 硬/软 Gravity 与尾部诊断已完成 | soft ×8 改善 ATE；原全地图尾部主要是覆盖伪影，但闭环局部 p95 仍增加 9–22 mm，Gravity 不进入最终后端或 Demo。 |
 | 校园自主采集 | 尚未开始 | 下一步先确认 LiDAR/IMU 型号、记录字段和时间同步，再做小规模试采。 |
 
-本文已同步至 2026-11-16 的协方差软 Gravity 离线评价状态。后续接手时仍以远端最新
+本文已同步至 2026-11-17 的地图尾部追加诊断状态。后续接手时仍以远端最新
 提交为准，并通过 `CHANGELOG.md` 和冻结状态 JSON 核对具体实验版本。
 
 ## 3. 冻结的 SC/GICP 结论
@@ -135,6 +135,7 @@ Demo 由本机 HTTP 服务提供。`127.0.0.1` 只能被运行服务的电脑访
 | --- | --- |
 | GICP 最终报告 | `docs/CUMULTI_STAGE11_GICP_VALUE_STUDY.md` |
 | 数据异常报告 | `docs/CUMULTI_ROBOT13_DATA_QUALITY_ASSESSMENT.md` |
+| PGO 地图尾部诊断 | `docs/CUMULTI_PGO_MAP_TAIL_DIAGNOSTIC.md` |
 | 接口约定 | `docs/INTERFACES.md` |
 | 完整运行指南 | `docs/RUNNING.md` |
 | 来源和归属 | `docs/PROVENANCE.md` |
@@ -157,6 +158,7 @@ python -m unittest discover -s src/cumulti -p test_stage11_gicp_value.py -v
 python -m unittest discover -s src/cumulti -p test_pgo_gravity_offline.py -v
 python -m unittest discover -s src/cumulti -p test_pgo_orientation_covariance.py -v
 python -m unittest discover -s src/cumulti -p test_pgo_soft_gravity_validation.py -v
+python -m unittest discover -s src/cumulti -p test_pgo_map_tail.py -v
 python src/cumulti/gicp_value_backend.py --help
 python src/cumulti/run_stage11_gicp_value_study.py --help
 MPLBACKEND=Agg python scripts/render_pgo_gravity_offline_figure.py
@@ -177,13 +179,13 @@ python scripts/serve_progressive_demo.py --no-browser
 
 优先级从高到低：
 
-1. **PGO 地图尾部定位：** hard 与协方差 soft ×8 都能改善 ATE，但地图 NN
-   p90/p95 均恶化。下一步把尾部 NN 点映射回具体 keyframe、空间区域和相关
-   回环，检查回环旋转、EKF up 与首回环初始化冲突；不再根据当前 GT 调权重。
-   当前仍不能把 Demo 地图当作全局精度证明。
-2. **Robot1/Robot3 传感器根因：** 取得采集时 MicroStrain 消息定义、启动配置和 map/earth TF，解码异常窗口的 EKF、双天线与 filter 状态。
-3. **团队集成：** 对齐候选 ID、时间戳、点云帧和 `T_query_from_candidate`，再重放冻结 Rank-1 GICP 边。
-4. **校园试采：** 用自有设备完成小规模数据记录、LIO 和重复路线闭环验证。
+1. **Loop Admission 真实统计：** 代码和测试已完成，但还需完整的 GICP 通过
+   候选文件，才能报告通过、冗余抑制和最终接纳数量。
+2. **odometry / Batch / iSAM2 对比：** 补齐同一因子图上的数值一致性、耗时和
+   内存验证；Gravity 不作为这项对比的前提或最终候选。
+3. **Robot1/Robot3 传感器根因：** 取得采集时 MicroStrain 消息定义、启动配置和 map/earth TF，解码异常窗口的 EKF、双天线与 filter 状态。
+4. **团队集成：** 对齐候选 ID、时间戳、点云帧和 `T_query_from_candidate`，再重放冻结 Rank-1 GICP 边。
+5. **校园试采：** 用自有设备完成小规模数据记录、LIO 和重复路线闭环验证。
 
 ## 9. 校园建图建议
 
@@ -238,7 +240,7 @@ python scripts/serve_progressive_demo.py --no-browser
 - [ ] 已在本地启动并完整走一遍 Demo；
 - [ ] 已理解 Robot1 KF150 / Robot3 KF234 的冻结裁剪规则；
 - [ ] 已把 PGO 验收与 SC/GICP 精度结论分开；
-- [ ] 已阅读 PGO 重力诊断与离线评价，并理解 ATE 改善不等于地图尾部改善；
+- [ ] 已阅读 PGO 重力与地图尾部诊断，并理解 ATE、覆盖敏感全地图 NN 和闭环局部 NN 的区别；
 - [ ] 开始校园采集前已确认 LiDAR、IMU、时钟与外参方案。
 
 任何新实验都应保存配置、输入 commit、文件哈希、运行命令和指标摘要；完成后更新本页相关状态、`PROJECT_CONTEXT.md`、`NEXT_STEPS.md` 和 `CHANGELOG.md`，再提交并推送。

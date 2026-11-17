@@ -24,9 +24,11 @@
 > 上段是 2026-09-23 首次发布时的历史状态。2026-11-10 已补做完整
 > 5796 节点 batch PGO 的 GT-free 重放与重力保持诊断；2026-11-15 已完成
 > 独立离线 GT/点云地图评价；2026-11-16 又完成 Robot1/Robot3 分轴协方差
-> 审计和 soft ×8 的冻结后评价。详见 `docs/CUMULTI_PGO_GRAVITY_VALIDATION.md`、
+> 审计和 soft ×8 的冻结后评价；2026-11-17 完成 GT-free 地图尾部来源与
+> 闭环局部敏感性复核。详见 `docs/CUMULTI_PGO_GRAVITY_VALIDATION.md`、
 > `docs/CUMULTI_PGO_SOFT_GRAVITY_INPUT_AUDIT.md` 和
-> `docs/CUMULTI_PGO_SOFT_GRAVITY_VALIDATION.md`。
+> `docs/CUMULTI_PGO_SOFT_GRAVITY_VALIDATION.md`、
+> `docs/CUMULTI_PGO_MAP_TAIL_DIAGNOSTIC.md`。
 
 ## 2026-11-17 协方差软重力发布验证
 
@@ -68,4 +70,33 @@ python src/cumulti/run_stage11_latency.py --help
 bash -n src/kitti/run_cvtnet_autodl.sh
 bash -n src/kitti/run_geometry_autodl.sh
 git diff --check
+```
+
+## 2026-11-17 地图尾部诊断验证
+
+| 检查 | 结果 |
+| --- | --- |
+| 尾部方向/标签/体素/直方图/闭环上下文测试 | 7/7 通过 |
+| 上述 PGO/Stage 11 回归测试 | 29/29 通过 |
+| 相关测试合计 | **36/36 通过** |
+| 尾部诊断与绘图 CLI `--help` | 通过 |
+| 原全地图 free/soft 指标复现 | 通过 |
+| 双方向指标由公开 CSV 独立复算 | 通过 |
+| 五组闭环局部 p95 差值检查 | 全部为正，9.3–21.7 mm |
+| 所有公开 JSON 解析 | 通过 |
+| 汇总图视觉检查 | 通过，无截断或缺失标记 |
+| GT/路径/凭据隔离扫描 | 待提交内容未检出 |
+| `git diff --check` | 通过 |
+
+真实数据诊断在独立服务器目录只读运行，没有修改 Stage 12D 或 soft ×8 冻结
+结果。公开摘要声明 `GT_used=false`；keyframe 加载只允许 ID 和 LiDAR 文件名。
+完整逐帧/逐回环文件没有复制到 Git。
+
+新增复查命令：
+
+```bash
+python -m unittest discover -s src/cumulti -p test_pgo_map_tail.py -v
+python src/cumulti/diagnose_pgo_map_tail.py --help
+MPLCONFIGDIR=/tmp/fyp-mpl MPLBACKEND=Agg \
+  python src/cumulti/plot_pgo_map_tail_diagnostic.py --help
 ```

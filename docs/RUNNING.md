@@ -135,5 +135,37 @@ external/pgo-env/bin/python src/cumulti/run_pgo_soft_gravity_validation.py \
 ```
 
 只允许对 `pre_gt_decision.json` 中冻结的候选运行离线 evaluator。原始实验选择
-soft ×8；不得根据其 GT/地图结果回头修改尺度。该候选最终没有通过地图尾部采用
-门槛，因此当前命令用于复现诊断，不是 Demo 或最终后端入口。
+soft ×8；不得根据其 GT/地图结果回头修改尺度。该候选最终只保留为离线诊断，
+不是 Demo 或最终后端入口。
+
+## PGO 地图尾部 GT-free 诊断
+
+在 free/soft 轨迹完全冻结后，可把覆盖差异与闭环重叠区域分开检查。该工具从
+keyframe 表只读取 ID 和 LiDAR 文件名，不读取 GT 位姿，也不调用求解器：
+
+```bash
+external/pgo-env/bin/python src/cumulti/diagnose_pgo_map_tail.py \
+  --free-trajectory /path/to/free_pose3_replay_trajectory.csv \
+  --candidate-trajectory /path/to/ekf_gravity_soft_cov_x8_trajectory.csv \
+  --candidate-label ekf_gravity_soft_cov_x8 \
+  --loop-edges /path/to/ordered_rank1_clean_loops.csv \
+  --free-loop-residuals /path/to/free_pose3_replay_loop_residuals.csv \
+  --candidate-loop-residuals /path/to/ekf_gravity_soft_cov_x8_loop_residuals.csv \
+  --robot1-keyframes /path/to/robot1/keyframes.csv \
+  --robot3-keyframes /path/to/robot3/keyframes.csv \
+  --robot1-lidar-root /path/to/robot1/lidar \
+  --robot3-lidar-root /path/to/robot3/lidar \
+  --output-dir outputs/cumulti_pgo_map_tail_diagnostic
+```
+
+默认复用全地图 frame stride 10、point stride 16、1–60 m 和 0.5 m voxel，
+并额外运行五组闭环局部 stride/voxel 敏感性检查。完整逐帧/逐回环输出留在
+`outputs/`；发布时只复制聚合 summary、方向 CSV、敏感性 CSV 和图表。
+
+生成公开图：
+
+```bash
+MPLCONFIGDIR=/tmp/fyp-mpl MPLBACKEND=Agg \
+python src/cumulti/plot_pgo_map_tail_diagnostic.py \
+  --results-dir results/cumulti_pgo_gravity_validation
+```
