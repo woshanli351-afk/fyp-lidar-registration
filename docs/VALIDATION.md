@@ -130,3 +130,40 @@ python src/cumulti/audit_loop_admission.py \
 审计来源是团队提交 `c09f9feb002947174d032971d5028487b9a35c85`。上游没有
 提交完整 pre-sanitation Rank-1 原表，因此 1233 读取自冻结 summary；120 行
 代表边与 75 行 clean 边已逐行独立复核。公开输出只有聚合统计和哈希。
+
+## 2026-11-17 PGO 三后端完整对比验证
+
+| 检查 | 结果 |
+| --- | --- |
+| backend 聚合、输入漂移、内存与门槛测试 | 4/4 通过 |
+| 当前环境可运行的 Loop/离线 GT/地图尾部回归 | 18/18 通过 |
+| Stage 11 / 协方差 / soft-gravity 历史测试 | 本机缺 OpenCV、rosbags、GTSAM；本次未修改对应算法 |
+| odometry-only 图 | 5796 节点、5794 odometry、0 loop、2 个局部 component |
+| Batch / iSAM2 图 | 均为 5796 节点、5794 odometry、75 loop、1 prior |
+| Batch 冻结轨迹复现 | 最大差约 `1e-9`，通过 |
+| iSAM2 Stage 13B 冻结统计复现 | 五项均在 `1e-6` 内，通过 |
+| 正式性能协议 | 同服务器，1 warm-up + 3 measured processes/backend |
+| GT phase order | pre-GT 决策和轨迹哈希先写入，之后才加载 GT |
+| 最终 evaluator | `PASS`，决定 `KEEP_BATCH_FOR_OFFLINE_DEMO` |
+| 公开 JSON/CSV 解析 | 通过 |
+| 图表视觉检查 | 通过，无截断或缺失标记 |
+| 服务器路径、凭据、原始轨迹与 GT 扫描 | 公开结果未检出 |
+
+真实测量使用 Intel Xeon Gold 6530、128 logical CPUs、GTSAM 4.2，固定
+`OMP_NUM_THREADS=1`、`OPENBLAS_NUM_THREADS=1`、`MKL_NUM_THREADS=1`。
+三次重复的 empirical p95 只作描述，不能作为生产尾延迟。公开性能文件同时
+区分 backend wall、process wall 和 iSAM2 单事件 update 延迟。
+
+复查命令：
+
+```bash
+python -m unittest discover -s src/cumulti -p test_pgo_backend_comparison.py -v
+python -m py_compile \
+  src/cumulti/benchmark_pgo_backends.py \
+  src/cumulti/evaluate_pgo_backend_comparison.py \
+  src/cumulti/plot_pgo_backend_comparison.py
+MPLCONFIGDIR=/tmp/fyp-mpl MPLBACKEND=Agg \
+  python src/cumulti/plot_pgo_backend_comparison.py \
+  --result-dir results/cumulti_pgo_backend_comparison \
+  --output /tmp/backend_comparison.png
+```

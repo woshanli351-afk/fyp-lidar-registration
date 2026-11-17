@@ -1,0 +1,27 @@
+{
+  "GT_access_started_after_pre_gt_decision": true,
+  "benchmark_summary_sha256": {
+    "batch_lm": [
+      "50a44f46fec6b062d74c6ac48ad6fa269bff528c6a8dc037c548984887147ff4",
+      "c43acc21f4c99c8a30549ec8f3c95352c458a729d8d7c1e3cc76e51363752c1f",
+      "73c1a1c8bf6866c8f44e71736a7e82699e9b76634ded3fbf6de995b1a5fee08d"
+    ],
+    "isam2_default": [
+      "afa75db7faaab750d925bc23c416412c48200e3e5e6663bd451b3b175f0246c9",
+      "b6c0d6b7633cfab0dd28377c2116374f4bad565b4941f31b3d6b8bad592dc9c5",
+      "b49ce7f62c0bd057b81469900d81ef4e669cdc796de7fda16d51da264595444f"
+    ],
+    "odometry_only": [
+      "f481f9e58c25ec78516ec24fa95196836e4f610c1a66f1304f0df5634e8fba33",
+      "a11f7ed82195abd1efe156d9954bdf1fc871e8a34056ab8a273ed240f356ed37",
+      "b4e5b0b718685fcee683c9f50c7591f8950a149ef43441596e4d38c094c8aee4"
+    ]
+  },
+  "source_commit": "c09f9feb002947174d032971d5028487b9a35c85",
+  "source_repository": "James-5757/fyp-place-recognition",
+  "trajectory_sha256": {
+    "batch_lm": "deef9fd11ad5db4cf597961ef596c08cd3a5f48c39d5a2dc4b6f7d34171534c0",
+    "isam2_default": "a23f3d6d4efbffb6e5051a8b57573c27dc148426fc85eeb638b205132465ebec",
+    "odometry_only": "3af0028eba485b3aabe437f722995d276b9b1a48f8ff4a25ec00defc39346221"
+  }
+}

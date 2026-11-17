@@ -7,6 +7,10 @@
   `2ff22b8e5aa661d36f25414cdcac5de8e4ed87b1`，此前保存在独立研究分支。
 - Stage 1/5/8/9 辅助模块：来自团队 [James-5757/fyp-place-recognition](https://github.com/James-5757/fyp-place-recognition)
   的共享项目代码，随 Stage 11 归档取得；保留原有文件头与算法，非本仓库新增原创算法。
+- PGO 三后端对比复用团队提交
+  `c09f9feb002947174d032971d5028487b9a35c85` 的 Stage 12D 冻结图和
+  Stage 13B/13C iSAM2 事件定义；本仓库新增统一 backend、odometry-only
+  基线、受控性能记录和独立离线评价，没有把上游求解结果归为本仓库原创算法。
 - `docs/source_files.json` 记录上游 base commit 及发布前每个源文件的 SHA-256。路径参数化后的文件哈希会变化。
 
 ## 外部依赖

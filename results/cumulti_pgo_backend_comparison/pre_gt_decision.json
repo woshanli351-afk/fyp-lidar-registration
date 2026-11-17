@@ -1,0 +1,31 @@
+{
+  "GT_used": false,
+  "agreement_checks": {
+    "rotation_median_deg": true,
+    "rotation_p95_deg": true,
+    "translation_median_m": false,
+    "translation_p95_m": false
+  },
+  "agreement_gates": {
+    "rotation_median_deg": 0.5,
+    "rotation_p95_deg": 2.0,
+    "translation_median_m": 0.1,
+    "translation_p95_m": 0.5
+  },
+  "decision": "KEEP_BATCH_FOR_OFFLINE_DEMO",
+  "isam2_frozen_reference_reproduced": {
+    "final_graph_error": true,
+    "rotation_median_deg": true,
+    "rotation_p95_deg": true,
+    "translation_median_m": true,
+    "translation_p95_m": true
+  },
+  "isam2_observed": {
+    "final_graph_error": 23.84041758963248,
+    "rotation_median_deg": 0.05531907622431543,
+    "rotation_p95_deg": 0.30153709272113544,
+    "translation_median_m": 0.1244305320181832,
+    "translation_p95_m": 0.5639853728425877
+  },
+  "reason": "odometry-only has no cross-robot frame; default iSAM2 reproduces the frozen run but fails same-gauge Batch agreement gates"
+}

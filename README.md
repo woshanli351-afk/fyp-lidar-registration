@@ -13,14 +13,15 @@ CU-Multi 依赖模块来自团队代码，具体来源见 [代码来源](docs/PR
 2. [项目现状与 AI 上下文](PROJECT_CONTEXT.md)
 3. [最新 GICP 作用与性价比报告](docs/CUMULTI_STAGE11_GICP_VALUE_STUDY.md)
 4. [Loop Admission 真实统计审计](docs/CUMULTI_LOOP_ADMISSION_AUDIT.md)
-5. [PGO 重力保持诊断](docs/CUMULTI_PGO_GRAVITY_VALIDATION.md)
-6. [软重力因子输入审计](docs/CUMULTI_PGO_SOFT_GRAVITY_INPUT_AUDIT.md)
-7. [协方差软重力验证](docs/CUMULTI_PGO_SOFT_GRAVITY_VALIDATION.md)
-8. [PGO 地图尾部诊断](docs/CUMULTI_PGO_MAP_TAIL_DIAGNOSTIC.md)
-9. [PGO 离线精度评价状态](docs/CUMULTI_PGO_OFFLINE_EVALUATION.md)
-10. [Robot1/Robot3 数据质量评估](docs/CUMULTI_ROBOT13_DATA_QUALITY_ASSESSMENT.md)
-11. [运行指南](docs/RUNNING.md) 与 [候选/配准接口](docs/INTERFACES.md)
-12. [下一步](NEXT_STEPS.md) 与 [更新记录](CHANGELOG.md)
+5. [Odometry / Batch / iSAM2 完整对比](docs/CUMULTI_PGO_BACKEND_COMPARISON.md)
+6. [PGO 重力保持诊断](docs/CUMULTI_PGO_GRAVITY_VALIDATION.md)
+7. [软重力因子输入审计](docs/CUMULTI_PGO_SOFT_GRAVITY_INPUT_AUDIT.md)
+8. [协方差软重力验证](docs/CUMULTI_PGO_SOFT_GRAVITY_VALIDATION.md)
+9. [PGO 地图尾部诊断](docs/CUMULTI_PGO_MAP_TAIL_DIAGNOSTIC.md)
+10. [PGO 离线精度评价状态](docs/CUMULTI_PGO_OFFLINE_EVALUATION.md)
+11. [Robot1/Robot3 数据质量评估](docs/CUMULTI_ROBOT13_DATA_QUALITY_ASSESSMENT.md)
+12. [运行指南](docs/RUNNING.md) 与 [候选/配准接口](docs/INTERFACES.md)
+13. [下一步](NEXT_STEPS.md) 与 [更新记录](CHANGELOG.md)
 
 ## 已有结果
 
@@ -41,6 +42,15 @@ Rank-1 候选中，1,233 个通过 GICP，时序去重后为 120 个独立事件
 Robot1 KF150 / Robot3 KF234 稳定起点过滤为最终 75 条 PGO 边。GICP 通过
 与最终接纳现在有独立字段和统计口径；历史 Top-3 的 `1403 -> 139` 是另一条
 策略，不能与当前 Rank-1 的 75 条混算。
+
+同日完成同一冻结 5796 节点/75 回环图上的 odometry-only、Batch LM 和默认
+iSAM2 完整受控对比。odometry-only 的 Robot1/Robot3 独立 ATE RMSE 最低
+（0.559/0.701 m），但没有跨机器人公共坐标系；Batch/iSAM2 的 joint ATE
+约为 19.61/19.63 m。iSAM2 单事件更新较快，但同 gauge 平移中位数/p95
+0.124/0.564 m 未通过 0.10/0.50 m 冻结门槛。因此离线 Demo 继续使用 Batch，
+不宣称当前融合提高了 GT 精度，也不把重放称为实时多机器人系统。
+
+![PGO backend comparison](results/cumulti_pgo_backend_comparison/backend_comparison.png)
 
 2026-11-15 完成同一冻结图上的独立 PGO 诊断与离线评价：自由 Pose3 分支
 逐节点精确复现团队 Stage 12D；增加 EKF up-vector 硬因子后，公共重力方向
@@ -86,6 +96,7 @@ src/cumulti/            # 通用 GICP、Stage 11、PGO 诊断及其共享依赖
 results/kitti/          # 历史指标与图表
 results/cumulti_stage11/# Stage 11 汇总、冻结配置、审计与图表
 results/cumulti_loop_admission/ # Loop Admission 聚合漏斗与来源哈希
+results/cumulti_pgo_backend_comparison/ # 三种 PGO 后端的公开聚合指标与协议
 results/cumulti_pgo_gravity_validation/ # PGO GT-free 冻结摘要
 demo/progressive_replay_v2/ # 准确率/效率面板与渐进式地图重放
 docs/                  # 报告、接口、运行说明与来源
@@ -105,6 +116,7 @@ python -m pip install -r requirements.txt
 python -m unittest discover -s src/kitti -p test_pipeline.py -v
 python -m unittest discover -s src/cumulti -p test_stage11_gicp_value.py -v
 python -m unittest discover -s src/cumulti -p test_loop_admission.py -v
+python -m unittest discover -s src/cumulti -p test_pgo_backend_comparison.py -v
 python src/cumulti/gicp_value_backend.py --help
 python src/cumulti/run_stage11_gicp_value_study.py --help
 ```

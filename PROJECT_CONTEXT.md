@@ -55,10 +55,14 @@
   `2000 查询 -> 1233 GICP pass -> 120 时序事件 -> 75 稳定段最终边`。
   最后 75 条是 120 条的精确子集，变换值和方向未改变，clean 输出无 GT。
   历史 Top-3 的 `2000 -> 1403 -> 139` 必须单独报告。
-- 团队 Stage 13C 已完成 odometry/Batch/iSAM2 的 GT-free 收敛审计；五种
-  标准配置均只有 3–4/8 checkpoints 通过，结论为
-  `NO_STANDARD_CONFIG_MET_GATES`，没有选中 iSAM2 变体。本仓库不重复运行
-  同一组实验，后续 Demo 继续使用冻结 batch 快照。
+- odometry/Batch/iSAM2 完整对比已闭合。本仓库复用了团队 Stage 13B/13C 的
+  冻结事件流，在同一 5796 节点/75 回环图上新增 odometry-only，并统一测量
+  独立/joint ATE、RPE、同 gauge 差异、运行时间和峰值内存。odometry-only
+  的 Robot1/Robot3 独立 ATE RMSE 为 0.559/0.701 m，但不能合图；Batch/
+  iSAM2 joint ATE 为 19.608/19.632 m。默认 iSAM2 复现上游结果，但平移
+  0.124 m median、0.564 m p95 未通过冻结门槛。最终决定为
+  `KEEP_BATCH_FOR_OFFLINE_DEMO`；这只选择可复现的离线后端，不代表 PGO
+  已提高真实轨迹精度或完成实时系统验收。
 
 ## 冻结条件
 

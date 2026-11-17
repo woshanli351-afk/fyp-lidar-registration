@@ -1,5 +1,19 @@
 # 更新记录
 
+## 2026-11-17 — Odometry / Batch / iSAM2 完整受控对比
+
+- 在同一冻结 5796 节点、5794 odometry、75 loop、1 prior 图上实现三个独立
+  GT-free 后端入口，并保持 Batch 和 iSAM2 的因子、gauge 与事件顺序一致。
+- 使用同一服务器、单进程顺序执行、固定单线程数学库、1 次 warm-up + 3 次
+  正式测量，统一记录 backend/process wall time、分项耗时和 peak RSS。
+- 离线 GT 评价显示 odometry-only 的单机器人 ATE 最低但不能合图；Batch 和
+  iSAM2 的 joint ATE 约 19.61/19.63 m，不能声称融合提高了真实轨迹精度。
+- 默认 iSAM2 在 `1e-6` 内复现 Stage 13B，但同 gauge 平移 median/p95
+  0.124/0.564 m 未通过 0.10/0.50 m 门槛；最终保留 Batch 作为离线 Demo
+  后端，iSAM2 不进入当前最终系统。
+- 发布聚合 CSV/JSON、协议、图表、报告和 4 个逻辑测试；原始轨迹、逐帧 GT、
+  服务器路径与凭据不进入 Git。
+
 ## 2026-11-17 — Loop Admission 真实统计与 iSAM2 状态对齐
 
 - 从团队提交 `c09f9feb002947174d032971d5028487b9a35c85` 的冻结输出独立核对

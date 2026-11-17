@@ -31,10 +31,10 @@
 | Robot1/Robot3 数据质量 | 已完成专项复核 | 完整 EKF 启动段不可用于建图；必须使用冻结稳定起点。 |
 | Progressive Demo V2 | 已完成并可本地运行 | 是使用冻结结果的静态离线重放，不是浏览器内实时运行 SC/GICP/PGO。 |
 | CU-Multi batch PGO | 硬/软 Gravity 与尾部诊断已完成 | soft ×8 改善 ATE；原全地图尾部主要是覆盖伪影，但闭环局部 p95 仍增加 9–22 mm，Gravity 不进入最终后端或 Demo。 |
-| iSAM2 收敛审计 | 团队 Stage 13C 已完成 | 五种标准配置均未通过全部 checkpoint；没有可替代 batch 的选中变体。 |
+| Odometry / Batch / iSAM2 对比 | 已完成 | Odometry 单轨迹精度最好但不能合图；iSAM2 数值门槛失败；离线 Demo 保留 Batch。 |
 | 校园自主采集 | 尚未开始 | 下一步先确认 LiDAR/IMU 型号、记录字段和时间同步，再做小规模试采。 |
 
-本文已同步至 2026-11-17 的地图尾部追加诊断状态。后续接手时仍以远端最新
+本文已同步至 2026-11-17 的 PGO 三后端完整对比状态。后续接手时仍以远端最新
 提交为准，并通过 `CHANGELOG.md` 和冻结状态 JSON 核对具体实验版本。
 
 ## 3. 冻结的 SC/GICP 结论
@@ -152,6 +152,7 @@ Demo 由本机 HTTP 服务提供。`127.0.0.1` 只能被运行服务的电脑访
 | Loop Admission 统计 | `docs/CUMULTI_LOOP_ADMISSION_AUDIT.md` |
 | 数据异常报告 | `docs/CUMULTI_ROBOT13_DATA_QUALITY_ASSESSMENT.md` |
 | PGO 地图尾部诊断 | `docs/CUMULTI_PGO_MAP_TAIL_DIAGNOSTIC.md` |
+| PGO 三后端完整对比 | `docs/CUMULTI_PGO_BACKEND_COMPARISON.md` |
 | 接口约定 | `docs/INTERFACES.md` |
 | 完整运行指南 | `docs/RUNNING.md` |
 | 来源和归属 | `docs/PROVENANCE.md` |
@@ -172,6 +173,7 @@ Demo 由本机 HTTP 服务提供。`127.0.0.1` 只能被运行服务的电脑访
 ```bash
 python -m unittest discover -s src/cumulti -p test_stage11_gicp_value.py -v
 python -m unittest discover -s src/cumulti -p test_loop_admission.py -v
+python -m unittest discover -s src/cumulti -p test_pgo_backend_comparison.py -v
 python -m unittest discover -s src/cumulti -p test_pgo_gravity_offline.py -v
 python -m unittest discover -s src/cumulti -p test_pgo_orientation_covariance.py -v
 python -m unittest discover -s src/cumulti -p test_pgo_soft_gravity_validation.py -v
@@ -201,9 +203,10 @@ python scripts/serve_progressive_demo.py --no-browser
 3. **团队集成：** 对齐候选 ID、时间戳、点云帧和 `T_query_from_candidate`，再重放冻结 Rank-1 GICP 边。
 4. **校园试采：** 用自有设备完成小规模数据记录、LIO 和重复路线闭环验证。
 
-Loop Admission 统计已经闭合；完整 pre-sanitation Rank-1 逐查询表只影响未来
-forensic 复算，不影响当前 120/75 的验证。odometry/Batch/iSAM2 的标准配置
-收敛比较也已由团队 Stage 13C 完成，结论为无配置通过全部门槛，不应重复做。
+Loop Admission 统计和 odometry/Batch/iSAM2 完整对比均已闭合；完整
+pre-sanitation Rank-1 逐查询表只影响未来 forensic 复算，不影响当前 120/75
+的验证。三后端结论是离线 Demo 保留 Batch；不要重复 Stage 13C 调参，也不要
+把公共坐标系输出误写成已经证明的地图精度提升。
 
 ## 9. 校园建图建议
 

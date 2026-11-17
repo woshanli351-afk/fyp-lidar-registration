@@ -22,9 +22,12 @@
    完整 pre-sanitation Rank-1 逐查询表未公开，因此 1233 来自冻结 summary；
    120/75 行、输入哈希、子集和变换未改已独立验证。若找回原表，只补 forensic
    audit，不重新调门槛。
-10. odometry / Batch / iSAM2 收敛对比已由团队 Stage 13C 完成：所有五个标准
-    变体均未通过全部 8 个 checkpoint，未选出可替代 batch 的配置。不要重复
-    同一实验；Demo 继续使用冻结 batch K1/K10/K75，并引用团队结论。
+10. odometry / Batch / iSAM2 完整对比已经完成。本仓库在同一 5796 节点/
+    75 回环图上补齐了 odometry-only、Batch LM、默认 iSAM2 的独立 ATE、
+    joint ATE、RPE、同 gauge 数值差、受控运行时间和峰值内存。默认 iSAM2
+    复现 Stage 13B，但平移中位数/p95 0.124/0.564 m 未通过 0.10/0.50 m
+    门槛；Demo 继续使用 Batch。不要重复 Stage 13C 调参，也不得把 Batch 合图
+    写成已证明的精度提升。
 11. 下一项可选工作是在不改 SC/GICP 参数的前提下，把 admission 漏斗加入
     Demo 分析面板；更重要的研究推进仍是 Robot1/Robot3 传感器根因或校园小试采。
 12. 后续每次实验同步代码、配置、指标摘要与报告，保留完整数据在外部归档。

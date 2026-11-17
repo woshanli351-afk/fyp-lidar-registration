@@ -93,7 +93,7 @@ def performance_rows(runs: dict[str, list[dict[str, Any]]]) -> list[dict[str, An
         wall = distribution([float(row["backend"]["backend_wall_s"]) for row in group])
         process = distribution([float(row["process_wall_s"]) for row in group])
         rss = distribution([float(row["peak_rss_kib"]) / 1024.0 for row in group])
-        rows.append({
+        row = {
             "backend": backend,
             "measured_repetitions": len(group),
             "backend_wall_median_s": wall["median"],
@@ -105,7 +105,47 @@ def performance_rows(runs: dict[str, list[dict[str, Any]]]) -> list[dict[str, An
             "peak_rss_empirical_p95_mib": rss["empirical_p95"],
             "peak_rss_max_mib": rss["max"],
             "p95_warning": "3 measured repetitions; empirical p95 is descriptive, not a stable tail estimate",
-        })
+            "graph_construction_median_s": None,
+            "batch_solver_core_median_s": None,
+            "isam2_update_total_median_s": None,
+            "isam2_estimate_extraction_total_median_s": None,
+            "isam2_first_fusion_update_median_ms": None,
+            "isam2_odometry_update_median_ms": None,
+            "isam2_odometry_update_p95_ms": None,
+            "isam2_loop_update_median_ms": None,
+            "isam2_loop_update_p95_ms": None,
+        }
+        if backend == "batch_lm":
+            graph_times = [value["backend"].get("graph_construction_s") for value in group]
+            solver_times = [value["backend"].get("solver_core_s") for value in group]
+            if all(value is not None for value in graph_times):
+                row["graph_construction_median_s"] = float(np.median(graph_times))
+            if all(value is not None for value in solver_times):
+                row["batch_solver_core_median_s"] = float(np.median(solver_times))
+        elif backend == "isam2_default":
+            graph_times = [value["backend"].get("full_factor_template_construction_s") for value in group]
+            update_times = [value["backend"].get("update_total_s") for value in group]
+            extraction_times = [value["backend"].get("estimate_extraction_total_s") for value in group]
+            if all(value is not None for value in graph_times):
+                row["graph_construction_median_s"] = float(np.median(graph_times))
+            if all(value is not None for value in update_times):
+                row["isam2_update_total_median_s"] = float(np.median(update_times))
+            if all(value is not None for value in extraction_times):
+                row["isam2_estimate_extraction_total_median_s"] = float(np.median(extraction_times))
+            if all("update_latency" in value["backend"] for value in group):
+                for event, prefix in (
+                    ("first_fusion", "isam2_first_fusion_update"),
+                    ("odometry_update", "isam2_odometry_update"),
+                    ("loop_update", "isam2_loop_update"),
+                ):
+                    row[f"{prefix}_median_ms"] = float(np.median([
+                        value["backend"]["update_latency"][event]["median_ms"] for value in group
+                    ]))
+                    if event != "first_fusion":
+                        row[f"{prefix}_p95_ms"] = float(np.median([
+                            value["backend"]["update_latency"][event]["p95_ms"] for value in group
+                        ]))
+        rows.append(row)
     return rows
 
 
@@ -134,6 +174,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--robot1-keyframes", type=Path, required=True)
     parser.add_argument("--robot3-keyframes", type=Path, required=True)
     parser.add_argument("--source-commit", required=True)
+    parser.add_argument("--cpu-model", required=True)
+    parser.add_argument("--logical-cpus", type=int, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     return parser.parse_args()
 
@@ -193,8 +235,33 @@ def main() -> None:
         "GT_access_started_after_pre_gt_decision": True,
     }
     write_json(output / "frozen_manifest.json", manifest)
+    first_run = runs["batch_lm"][0]
+    write_json(output / "benchmark_protocol.json", {
+        "host": "controlled_project_server",
+        "host_consistency_verified": True,
+        "platform": first_run["platform"],
+        "cpu_model": args.cpu_model,
+        "logical_cpus": args.logical_cpus,
+        "python": first_run["python"],
+        "gtsam_version": first_run["gtsam_version"],
+        "thread_environment": first_run["thread_environment"],
+        "execution": "single process, sequential backend invocations",
+        "warmups_per_backend": 1,
+        "measured_repetitions_per_backend": len(runs["batch_lm"]),
+        "peak_memory_definition": "resource.getrusage(RUSAGE_SELF).ru_maxrss on Linux, converted KiB to MiB",
+        "backend_wall_definition": "GT-free backend construction and computation; excludes CSV input load and trajectory serialization",
+        "process_wall_definition": "input load + backend + trajectory serialization + frozen-baseline comparison",
+        "code_sha256": {
+            **first_run["code_sha256"],
+            "evaluate_pgo_backend_comparison.py": sha256(Path(__file__).resolve()),
+        },
+        "input_sha256": first_run["inputs"],
+        "source_commit": args.source_commit,
+        "GT_used": False,
+    })
 
-    performance = pd.DataFrame(performance_rows(runs))
+    performance_records = performance_rows(runs)
+    performance = pd.DataFrame(performance_records)
     performance.to_csv(output / "performance_summary.csv", index=False, float_format="%.12g")
 
     # GT is first loaded only after the backend choice and hashes are persisted.
@@ -236,7 +303,10 @@ def main() -> None:
             "batch_lm": "converged offline reference and current Demo backend",
             "isam2_default": "fast incremental diagnostic; not accepted because same-graph pose agreement gates fail",
         },
-        "performance": performance.set_index("backend").to_dict(orient="index"),
+        "performance": {
+            row["backend"]: {key: value for key, value in row.items() if key != "backend"}
+            for row in performance_records
+        },
         "isam2_vs_batch": numerical.iloc[0].to_dict(),
         "GT_used_for_backend_or_selection": False,
         "offline_GT_metrics_written": True,

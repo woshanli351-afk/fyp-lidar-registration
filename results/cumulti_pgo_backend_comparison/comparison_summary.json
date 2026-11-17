@@ -1,0 +1,102 @@
+{
+  "GT_used_for_backend_or_selection": false,
+  "backend_roles": {
+    "batch_lm": "converged offline reference and current Demo backend",
+    "isam2_default": "fast incremental diagnostic; not accepted because same-graph pose agreement gates fail",
+    "odometry_only": "per-robot local baseline; no cross-robot common frame or merged-map claim"
+  },
+  "decision": "KEEP_BATCH_FOR_OFFLINE_DEMO",
+  "graph": {
+    "loop_factors": 75,
+    "nodes": 5796,
+    "odometry_factors": 5794,
+    "prior_factors": 1
+  },
+  "isam2_vs_batch": {
+    "PASS": false,
+    "comparison": "isam2_default_vs_batch_lm",
+    "final_graph_error": 23.84041758963248,
+    "rotation_median_deg": 0.05531907622431543,
+    "rotation_median_gate_deg": 0.5,
+    "rotation_p95_deg": 0.30153709272113544,
+    "rotation_p95_gate_deg": 2.0,
+    "same_gauge_no_alignment": true,
+    "translation_median_gate_m": 0.1,
+    "translation_median_m": 0.1244305320181832,
+    "translation_p95_gate_m": 0.5,
+    "translation_p95_m": 0.5639853728425877
+  },
+  "limitations": [
+    "three measured repetitions per backend; p95 is descriptive",
+    "backend-only benchmark excludes SC/GICP, networking, scan loading and map publication",
+    "odometry-only trajectories are separate robot-local frames, so joint ATE and merged-map consistency are not applicable",
+    "Robot3 is a preloaded reference map while Robot1 is replayed; this is not simultaneous live multi-robot operation"
+  ],
+  "offline_GT_metrics_written": true,
+  "performance": {
+    "batch_lm": {
+      "backend_wall_empirical_p95_s": 0.7920838239602744,
+      "backend_wall_max_s": 0.7936627399176359,
+      "backend_wall_median_s": 0.7778735803440213,
+      "backend_wall_min_s": 0.4709164500236511,
+      "batch_solver_core_median_s": 0.5397500758990645,
+      "graph_construction_median_s": 0.10825159307569265,
+      "isam2_estimate_extraction_total_median_s": null,
+      "isam2_first_fusion_update_median_ms": null,
+      "isam2_loop_update_median_ms": null,
+      "isam2_loop_update_p95_ms": null,
+      "isam2_odometry_update_median_ms": null,
+      "isam2_odometry_update_p95_ms": null,
+      "isam2_update_total_median_s": null,
+      "measured_repetitions": 3,
+      "p95_warning": "3 measured repetitions; empirical p95 is descriptive, not a stable tail estimate",
+      "peak_rss_empirical_p95_mib": 150.153515625,
+      "peak_rss_max_mib": 150.25390625,
+      "peak_rss_median_mib": 149.25,
+      "process_wall_median_s": 1.6908037662506104
+    },
+    "isam2_default": {
+      "backend_wall_empirical_p95_s": 4.270272753480822,
+      "backend_wall_max_s": 4.283337217755616,
+      "backend_wall_median_s": 4.152692575007677,
+      "backend_wall_min_s": 3.8953938018530607,
+      "batch_solver_core_median_s": null,
+      "graph_construction_median_s": 0.058141124434769154,
+      "isam2_estimate_extraction_total_median_s": 0.684892550110817,
+      "isam2_first_fusion_update_median_ms": 34.07103382050991,
+      "isam2_loop_update_median_ms": 0.45187491923570633,
+      "isam2_loop_update_p95_ms": 19.686090154573236,
+      "isam2_odometry_update_median_ms": 0.01996941864490509,
+      "isam2_odometry_update_p95_ms": 14.619238208979274,
+      "isam2_update_total_median_s": 3.222081622108817,
+      "measured_repetitions": 3,
+      "p95_warning": "3 measured repetitions; empirical p95 is descriptive, not a stable tail estimate",
+      "peak_rss_empirical_p95_mib": 178.376171875,
+      "peak_rss_max_mib": 178.5,
+      "peak_rss_median_mib": 177.26171875,
+      "process_wall_median_s": 5.4660532381385565
+    },
+    "odometry_only": {
+      "backend_wall_empirical_p95_s": 0.05406431835144758,
+      "backend_wall_max_s": 0.05420020967721939,
+      "backend_wall_median_s": 0.052841296419501305,
+      "backend_wall_min_s": 0.02813902124762535,
+      "batch_solver_core_median_s": null,
+      "graph_construction_median_s": null,
+      "isam2_estimate_extraction_total_median_s": null,
+      "isam2_first_fusion_update_median_ms": null,
+      "isam2_loop_update_median_ms": null,
+      "isam2_loop_update_p95_ms": null,
+      "isam2_odometry_update_median_ms": null,
+      "isam2_odometry_update_p95_ms": null,
+      "isam2_update_total_median_s": null,
+      "measured_repetitions": 3,
+      "p95_warning": "3 measured repetitions; empirical p95 is descriptive, not a stable tail estimate",
+      "peak_rss_empirical_p95_mib": 127.18515625,
+      "peak_rss_max_mib": 127.2890625,
+      "peak_rss_median_mib": 126.25,
+      "process_wall_median_s": 0.7341237822547555
+    }
+  },
+  "status": "PASS"
+}

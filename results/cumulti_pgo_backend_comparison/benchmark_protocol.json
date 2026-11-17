@@ -1,0 +1,32 @@
+{
+  "GT_used": false,
+  "backend_wall_definition": "GT-free backend construction and computation; excludes CSV input load and trajectory serialization",
+  "code_sha256": {
+    "benchmark_pgo_backends.py": "a6e65e272156500a99a5ea389c4c2026e87ecfb3663c56dd924c8cbf42f92db9",
+    "evaluate_pgo_backend_comparison.py": "a823e4a35f3190f1f2cc846dc0fa738a5981cf2e08c045f37c28ce636fde0422",
+    "run_pgo_gravity_validation.py": "d8ebfca32ff374c94a283566c5894b40f8e3624a141715fe58c322466c97ddcb"
+  },
+  "cpu_model": "INTEL(R) XEON(R) GOLD 6530",
+  "execution": "single process, sequential backend invocations",
+  "gtsam_version": "4.2 wheel",
+  "host": "controlled_project_server",
+  "host_consistency_verified": true,
+  "input_sha256": {
+    "batch_baseline_sha256": "6093963a1b47b98ca3219ae05cb34d6976cd3d51984fbda065a46032bf514937",
+    "local_trajectory_sha256": "64f917ce4282f7d69909f89e8c2225d637e52f66596a97c5c0c47be4fce97297",
+    "loop_edges_sha256": "69c4ed4c744392edba309b92a5b84abc9b34aa4200c37542d56881a0f114d44e"
+  },
+  "logical_cpus": 128,
+  "measured_repetitions_per_backend": 3,
+  "peak_memory_definition": "resource.getrusage(RUSAGE_SELF).ru_maxrss on Linux, converted KiB to MiB",
+  "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+  "process_wall_definition": "input load + backend + trajectory serialization + frozen-baseline comparison",
+  "python": "3.10.20 (main, Jun 11 2026, 15:17:37) [GCC 14.3.0]",
+  "source_commit": "c09f9feb002947174d032971d5028487b9a35c85",
+  "thread_environment": {
+    "MKL_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1"
+  },
+  "warmups_per_backend": 1
+}

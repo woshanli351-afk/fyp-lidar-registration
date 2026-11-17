@@ -108,6 +108,41 @@ python src/cumulti/audit_loop_admission.py \
 上游当前未发布完整 `rank1_raw_edges.csv`，所以 1233 从冻结 summary 读取；
 120/75 行和两者的精确子集关系由脚本逐行核对。
 
+## Odometry / Batch / iSAM2 完整对比
+
+三种模式必须分别启动独立进程，使用同一冻结 Stage 12D 输入，且运行阶段不得
+读取 GT。`benchmark_pgo_backends.py` 每次只执行一种 backend：
+
+```bash
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+external/pgo-env/bin/python src/cumulti/benchmark_pgo_backends.py \
+  --mode batch_lm \
+  --local-trajectory /path/to/clean_local_trajectory.csv \
+  --loop-edges /path/to/ordered_rank1_clean_loops.csv \
+  --batch-reference /path/to/clean_all75_gtsam_trajectory.csv \
+  --output-trajectory outputs/pgo_backend/batch_run1.csv \
+  --output-summary outputs/pgo_backend/batch_run1.json
+```
+
+正式协议是每种模式先 warm-up 一次，再运行三次；`--mode` 依次使用
+`odometry_only`、`batch_lm` 和 `isam2_default`。完成后才用
+`evaluate_pgo_backend_comparison.py` 冻结哈希、写入 pre-GT 决策并执行离线
+GT 评价。完整命令参数可用 `--help` 查看；逐节点轨迹和九次运行 JSON 留在
+私有实验目录，公开仓库只保存 `results/cumulti_pgo_backend_comparison/` 的
+聚合文件。
+
+重新生成公开图：
+
+```bash
+MPLCONFIGDIR=/tmp/fyp-mpl MPLBACKEND=Agg \
+python src/cumulti/plot_pgo_backend_comparison.py \
+  --result-dir results/cumulti_pgo_backend_comparison \
+  --output results/cumulti_pgo_backend_comparison/backend_comparison.png
+```
+
+当前冻结决定为 `KEEP_BATCH_FOR_OFFLINE_DEMO`。不要因为 iSAM2 单事件更新较快
+就把后端测试描述成全系统实时结果；它不包含 SC/GICP、点云 I/O、通信或地图发布。
+
 ## PGO 姿态协方差审计
 
 软重力因子使用前，应从原始 `nav_msgs/msg/Odometry` 归档分离 roll、pitch、yaw
