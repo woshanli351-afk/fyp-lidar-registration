@@ -91,6 +91,23 @@ python src/cumulti/run_stage11_latency.py --direction robot2_to_robot3 --repeats
 原始逐对注册结果和该复现文件未公开；重新验证需按原归档样本 ID 重建。
 本次仓库发布只做逻辑/导入/CLI 验证，不声称在缺少上述数据时完成端到端重现。
 
+## Loop Admission 聚合审计
+
+审计器读取团队仓库已经冻结的 Stage 9、10.2 和 12D 输出，只发布聚合漏斗、
+来源哈希和一致性判定。它不会复制逐查询记录，也不会把 GT 加入 admission：
+
+```bash
+python src/cumulti/audit_loop_admission.py \
+  --team-root /path/to/fyp-place-recognition \
+  --source-commit c09f9feb002947174d032971d5028487b9a35c85 \
+  --output-dir outputs/cumulti_loop_admission
+```
+
+预期输出为 `PASS: Rank-1 2000 -> 1233 -> 120 -> 75`。若 source hash、稳定
+起点、quality 门槛、变换方向或过滤前后保留值不一致，脚本会失败而不是重写结果。
+上游当前未发布完整 `rank1_raw_edges.csv`，所以 1233 从冻结 summary 读取；
+120/75 行和两者的精确子集关系由脚本逐行核对。
+
 ## PGO 姿态协方差审计
 
 软重力因子使用前，应从原始 `nav_msgs/msg/Odometry` 归档分离 roll、pitch、yaw

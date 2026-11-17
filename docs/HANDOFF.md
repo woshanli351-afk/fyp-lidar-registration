@@ -27,9 +27,11 @@
 | Scan Context 检索 | 已完成冻结评估 | 原始 Rank-1 召回高，但在大量无重叠查询下会产生较多错误候选。 |
 | GICP 几何验证 | Stage 11 已完成 | Rank-1 GICP 显著减少假闭环，并输出可用的相对位姿；应保留。 |
 | Rank-1/Top-3/选择性策略 | 已比较 | Rank-1 GICP 为默认；Top-3 仅作离线或失败恢复；选择性策略不作为统一默认。 |
+| Loop Admission 统计 | 已完成 | Rank-1 为 2000→1233→120→75；GICP pass、独立事件和最终图边已分开。 |
 | Robot1/Robot3 数据质量 | 已完成专项复核 | 完整 EKF 启动段不可用于建图；必须使用冻结稳定起点。 |
 | Progressive Demo V2 | 已完成并可本地运行 | 是使用冻结结果的静态离线重放，不是浏览器内实时运行 SC/GICP/PGO。 |
 | CU-Multi batch PGO | 硬/软 Gravity 与尾部诊断已完成 | soft ×8 改善 ATE；原全地图尾部主要是覆盖伪影，但闭环局部 p95 仍增加 9–22 mm，Gravity 不进入最终后端或 Demo。 |
+| iSAM2 收敛审计 | 团队 Stage 13C 已完成 | 五种标准配置均未通过全部 checkpoint；没有可替代 batch 的选中变体。 |
 | 校园自主采集 | 尚未开始 | 下一步先确认 LiDAR/IMU 型号、记录字段和时间同步，再做小规模试采。 |
 
 本文已同步至 2026-11-17 的地图尾部追加诊断状态。后续接手时仍以远端最新
@@ -64,7 +66,20 @@ SC 只给候选和粗 yaw，不能生成米制平移。SC-only 地点识别决�
 
 完整统计、五种策略和延迟协议见 [Stage 11 GICP 报告](CUMULTI_STAGE11_GICP_VALUE_STUDY.md)。
 
-### 3.3 变换方向和数据隔离
+### 3.3 Loop Admission 真实数量
+
+当前 Robot1→Robot3 Rank-1 后端的完整漏斗是：
+
+```text
+2000 个查询 -> 1233 个 GICP pass -> 120 个时序事件 -> 75 条最终 PGO 边
+```
+
+1,113 条通过边被识别为相邻重复观测；另有 45 个事件因端点早于 Robot1
+KF150 / Robot3 KF234 而不进入 clean backend。历史 Top-3 是独立的
+`2000 -> 1403 -> 139`，不可与最终 75 条串联。定义、来源哈希和证据边界见
+[Loop Admission 审计](CUMULTI_LOOP_ADMISSION_AUDIT.md)。
+
+### 3.4 变换方向和数据隔离
 
 GICP 固定使用 candidate 为 source、query 为 target：
 
@@ -134,6 +149,7 @@ Demo 由本机 HTTP 服务提供。`127.0.0.1` 只能被运行服务的电脑访
 | 内容 | 位置 |
 | --- | --- |
 | GICP 最终报告 | `docs/CUMULTI_STAGE11_GICP_VALUE_STUDY.md` |
+| Loop Admission 统计 | `docs/CUMULTI_LOOP_ADMISSION_AUDIT.md` |
 | 数据异常报告 | `docs/CUMULTI_ROBOT13_DATA_QUALITY_ASSESSMENT.md` |
 | PGO 地图尾部诊断 | `docs/CUMULTI_PGO_MAP_TAIL_DIAGNOSTIC.md` |
 | 接口约定 | `docs/INTERFACES.md` |
@@ -155,6 +171,7 @@ Demo 由本机 HTTP 服务提供。`127.0.0.1` 只能被运行服务的电脑访
 
 ```bash
 python -m unittest discover -s src/cumulti -p test_stage11_gicp_value.py -v
+python -m unittest discover -s src/cumulti -p test_loop_admission.py -v
 python -m unittest discover -s src/cumulti -p test_pgo_gravity_offline.py -v
 python -m unittest discover -s src/cumulti -p test_pgo_orientation_covariance.py -v
 python -m unittest discover -s src/cumulti -p test_pgo_soft_gravity_validation.py -v
@@ -179,13 +196,14 @@ python scripts/serve_progressive_demo.py --no-browser
 
 优先级从高到低：
 
-1. **Loop Admission 真实统计：** 代码和测试已完成，但还需完整的 GICP 通过
-   候选文件，才能报告通过、冗余抑制和最终接纳数量。
-2. **odometry / Batch / iSAM2 对比：** 补齐同一因子图上的数值一致性、耗时和
-   内存验证；Gravity 不作为这项对比的前提或最终候选。
-3. **Robot1/Robot3 传感器根因：** 取得采集时 MicroStrain 消息定义、启动配置和 map/earth TF，解码异常窗口的 EKF、双天线与 filter 状态。
-4. **团队集成：** 对齐候选 ID、时间戳、点云帧和 `T_query_from_candidate`，再重放冻结 Rank-1 GICP 边。
-5. **校园试采：** 用自有设备完成小规模数据记录、LIO 和重复路线闭环验证。
+1. **Robot1/Robot3 传感器根因：** 取得采集时 MicroStrain 消息定义、启动配置和 map/earth TF，解码异常窗口的 EKF、双天线与 filter 状态。
+2. **Demo admission 面板（可选）：** 将 Rank-1 的 2000→1233→120→75 漏斗加入分析视图，不重算 SC/GICP 或改动演示主线。
+3. **团队集成：** 对齐候选 ID、时间戳、点云帧和 `T_query_from_candidate`，再重放冻结 Rank-1 GICP 边。
+4. **校园试采：** 用自有设备完成小规模数据记录、LIO 和重复路线闭环验证。
+
+Loop Admission 统计已经闭合；完整 pre-sanitation Rank-1 逐查询表只影响未来
+forensic 复算，不影响当前 120/75 的验证。odometry/Batch/iSAM2 的标准配置
+收敛比较也已由团队 Stage 13C 完成，结论为无配置通过全部门槛，不应重复做。
 
 ## 9. 校园建图建议
 

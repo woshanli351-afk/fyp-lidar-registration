@@ -46,6 +46,12 @@ GICP 接受门槛 `>= 0.6091`。Top-3 按 SC rank 顺序，接受首个通过者
 `evaluate` 才合并 GT，产出的 `decisions_*.csv` 和 `all_policy_decisions.csv` 是**离线评价文件**，不是可直接发布给前端的在线流。
 Demo 应只投影 query/candidate ID、接受状态、quality 和实际变换，去除所有 GT/误差列。
 
+`GICP_pass` 与 `loop_admitted` 必须分开：前者表示单个候选的 quality 达到
+0.6091；后者还要求该边成为时序重复簇代表，并且两个端点都位于冻结稳定段。
+当前 Robot1→Robot3 Rank-1 链路为 1233 个 GICP pass、120 个时序代表、75 个
+最终接纳边。前端若显示漏斗，必须同时标出所用 policy 和统计 grain，不能把
+Top-3 的 1403/139 与 Rank-1 的 120/75 拼成一条链。
+
 Protocol FP 为 GT 水平距离 >=5 m；当前归档实现的 mapping hazard 使用平移误差 >3 m
 或 SO(3) 旋转角误差 >15°。原计划用语曾写 yaw，但归档代码及指标列实际为 `rotation_error_deg`；
 本次发布保持历史统计不变，后续若补 yaw 指标须另记版本，不能把当前数字直接改名为 yaw。

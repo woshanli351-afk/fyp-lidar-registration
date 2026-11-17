@@ -17,10 +17,17 @@
    反而改善 2.84%，确认原全地图尾部主要是覆盖指标伪影。
 8. 75 个闭环局部的 soft p95 在五组设置下仍一致增加 9–22 mm，当前 Python
    因子求解约 62 s；所以 hard/soft Gravity 仍不进入 Demo、原生因子或 iSAM2。
-9. 下一优先项是补齐 Loop Admission 的真实统计：找到完整 GICP 通过候选文件，
-   报告通过、冗余抑制和最终接纳数量。之后再做 odometry-only / free Batch /
-   iSAM2 的数值一致性、耗时和内存对比，不以 Gravity 分支作为前提。
-10. 后续每次实验同步代码、配置、指标摘要与报告，保留完整数据在外部归档。
+9. Loop Admission 真实统计已完成：当前 Rank-1 后端为
+   `2000 -> 1233 -> 120 -> 75`，历史 Top-3 为 `2000 -> 1403 -> 139`。
+   完整 pre-sanitation Rank-1 逐查询表未公开，因此 1233 来自冻结 summary；
+   120/75 行、输入哈希、子集和变换未改已独立验证。若找回原表，只补 forensic
+   audit，不重新调门槛。
+10. odometry / Batch / iSAM2 收敛对比已由团队 Stage 13C 完成：所有五个标准
+    变体均未通过全部 8 个 checkpoint，未选出可替代 batch 的配置。不要重复
+    同一实验；Demo 继续使用冻结 batch K1/K10/K75，并引用团队结论。
+11. 下一项可选工作是在不改 SC/GICP 参数的前提下，把 admission 漏斗加入
+    Demo 分析面板；更重要的研究推进仍是 Robot1/Robot3 传感器根因或校园小试采。
+12. 后续每次实验同步代码、配置、指标摘要与报告，保留完整数据在外部归档。
 
 本次发布不重新调参、不重跑全量实验、不将历史 KITTI PGO 指标当作 CU-Multi Demo 成功证明。
 

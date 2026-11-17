@@ -1,0 +1,98 @@
+{
+  "evidence_boundary": {
+    "full_pre_sanitation_rank1_rows_available_in_source_commit": false,
+    "independently_checked_rows": {
+      "rank1_temporal_representatives": 120,
+      "stable_endpoint_admitted": 75
+    },
+    "note": "The 1,233 pre-sanitation Rank-1 pass count is verified against the frozen summary, not recomputed from an uncommitted full candidate table.",
+    "rank1_gicp_pass_count_source": "frozen rank1_sanitation_summary.json"
+  },
+  "frozen_policy": {
+    "gicp_quality_threshold": 0.6091,
+    "stable_candidate_start_keyframe": 234,
+    "stable_query_start_keyframe": 150,
+    "temporal_cluster_rule": "query gap >3 OR absolute candidate gap >5 starts a new cluster; maximum GICP_quality represents each cluster",
+    "transform_direction": "T_query_from_candidate"
+  },
+  "rank1_current_backend": {
+    "final_admission_rate_of_queries": 0.0375,
+    "final_retention_rate_of_gicp_passed": 0.06082725060827251,
+    "final_retention_rate_of_temporal_representatives": 0.625,
+    "gicp_pass_rate": 0.6165,
+    "gicp_passed": 1233,
+    "gicp_rejected": 767,
+    "query_count": 2000,
+    "removed_by_stable_endpoint_filter": 45,
+    "stable_endpoint_admitted": 75,
+    "temporal_cluster_representatives": 120,
+    "temporal_duplicate_removal_rate_of_passed": 0.902676399026764,
+    "temporal_duplicates_removed": 1113
+  },
+  "schema_version": 1,
+  "source": {
+    "commit": "c09f9feb002947174d032971d5028487b9a35c85",
+    "files": {
+      "clean_loops": {
+        "path": "outputs/cumulti_v1/12d_clean_backend/ordered_rank1_clean_loops.csv",
+        "sha256": "69c4ed4c744392edba309b92a5b84abc9b34aa4200c37542d56881a0f114d44e"
+      },
+      "clean_provenance": {
+        "path": "outputs/cumulti_v1/12d_clean_backend/clean_loop_provenance_audit.json",
+        "sha256": "22f13c7fc07238c8d2a040bf6ef31084223c63c6974b3d739933dabe8a19c2a1"
+      },
+      "rank1_representatives": {
+        "path": "outputs/cumulti_v1/10_2_pgo_policy_selection/rank1_sanitized_edges.csv",
+        "sha256": "65fb62d7895e68b817d6ede8ff9acfd4b6a9d8e2219c1194b7b7ff6226e8c7d3"
+      },
+      "rank1_summary": {
+        "path": "outputs/cumulti_v1/10_2_pgo_policy_selection/rank1_sanitation_summary.json",
+        "sha256": "73acfe4a09c3e63c6bde2dfb47fc92e4856e3b3b34ad73d272f0194e4e8d9ca5"
+      },
+      "top3_clusters": {
+        "path": "outputs/cumulti_v1/09_sc_gicp_integration/duplicate_loop_analysis.csv",
+        "sha256": "e70de44e9abebbac443c1c3178c19a582701f37ebecb5eb403340bce72e47540"
+      },
+      "top3_confusion": {
+        "path": "outputs/cumulti_v1/09_sc_gicp_integration/verification_confusion.csv",
+        "sha256": "8aa9a1d3c6704ef429cb7afab07b1119dc5ab626b47e40321c9e67fb8a1b1003"
+      },
+      "top3_representatives": {
+        "path": "outputs/cumulti_v1/09_sc_gicp_integration/sanitized_loop_edges.csv",
+        "sha256": "37692d3708a045a344cb185d8b8d10261e4488c290a616b4d0744b06acb0eac2"
+      }
+    },
+    "repository": "James-5757/fyp-place-recognition"
+  },
+  "status": "PASS",
+  "top3_early_stop_historical": {
+    "gicp_acceptance_rate": 0.7015,
+    "gicp_accepted": 1403,
+    "gicp_rejected": 597,
+    "multi_edge_cluster_count": 78,
+    "offline_confusion": {
+      "FN": 459,
+      "FP": 29,
+      "TN": 138,
+      "TP": 1374
+    },
+    "query_count": 2000,
+    "representative_rank_counts": {
+      "1": 106,
+      "2": 15,
+      "3": 18
+    },
+    "temporal_cluster_representatives": 139,
+    "temporal_duplicate_removal_rate_of_accepted": 0.9009265858873842,
+    "temporal_duplicates_removed": 1264
+  },
+  "validation": {
+    "admission_decisions_use_gt": false,
+    "clean_loops_are_exact_rank1_subset": true,
+    "clean_output_has_no_gt_fields": true,
+    "counts_reconciled": true,
+    "preserved_values_unchanged": true,
+    "rank1_source_hash_matches_clean_provenance": true,
+    "source_checkout_commit_verified": true
+  }
+}

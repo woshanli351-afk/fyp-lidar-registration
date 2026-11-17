@@ -100,3 +100,33 @@ python src/cumulti/diagnose_pgo_map_tail.py --help
 MPLCONFIGDIR=/tmp/fyp-mpl MPLBACKEND=Agg \
   python src/cumulti/plot_pgo_map_tail_diagnostic.py --help
 ```
+
+## 2026-11-17 Loop Admission 审计验证
+
+| 检查 | 结果 |
+| --- | --- |
+| 合成漏斗/哈希/稳定起点/变换保护测试 | 4/4 通过 |
+| 当前环境可运行的 Stage 11/PGO 聚合回归测试 | 29/29 通过 |
+| 依赖 GTSAM 的两组历史测试 | 当前 Python 3.13 环境未安装 GTSAM，未重跑；本次未修改其代码 |
+| 上游 Top-3 接受数与聚类输入数 | 1403 = 1403 |
+| Top-3 聚类代表 / sanitized 行数 | 139 / 139 |
+| Rank-1 summary / sanitized 行数 | 120 / 120 |
+| Rank-1 来源 SHA-256 与 Stage 12D provenance | 完全一致 |
+| clean loops 是 Rank-1 representatives 精确子集 | 75/75 通过 |
+| ID、时间戳、SC、quality 与变换逐值保持 | 通过 |
+| clean 输出 GT 字段扫描 | 未发现 |
+| 实际审计 CLI | `PASS: Rank-1 2000 -> 1233 -> 120 -> 75` |
+
+复查命令：
+
+```bash
+python -m unittest discover -s src/cumulti -p test_loop_admission.py -v
+python src/cumulti/audit_loop_admission.py \
+  --team-root /path/to/fyp-place-recognition \
+  --source-commit c09f9feb002947174d032971d5028487b9a35c85 \
+  --output-dir outputs/cumulti_loop_admission
+```
+
+审计来源是团队提交 `c09f9feb002947174d032971d5028487b9a35c85`。上游没有
+提交完整 pre-sanitation Rank-1 原表，因此 1233 读取自冻结 summary；120 行
+代表边与 75 行 clean 边已逐行独立复核。公开输出只有聚合统计和哈希。

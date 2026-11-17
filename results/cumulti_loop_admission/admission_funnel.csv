@@ -1,0 +1,8 @@
+policy,stage,input_count,output_count,rate_of_queries,retention_from_previous
+rank1_current_backend,queries,2000,2000,1,1
+rank1_current_backend,gicp_passed,2000,1233,0.6165,0.6165
+rank1_current_backend,temporal_cluster_representatives,1233,120,0.06,0.0973236009732
+rank1_current_backend,stable_endpoint_admitted,120,75,0.0375,0.625
+top3_early_stop_historical,queries,2000,2000,1,1
+top3_early_stop_historical,gicp_accepted,2000,1403,0.7015,0.7015
+top3_early_stop_historical,temporal_cluster_representatives,1403,139,0.0695,0.0990734141126
