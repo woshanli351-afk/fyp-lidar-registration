@@ -1,5 +1,16 @@
 # 更新记录
 
+## 2026-11-19 — Gravity 真实地图诊断页
+
+- 从冻结 Free Pose3 与 soft ×8 轨迹以及原始 Robot1/Robot3 LiDAR 导出 GT-free
+  展示点云；关键帧表只读取 `keyframe_id` 和 `lidar_file`，不读取 GT 位姿列。
+- 在渐进式 Demo 增加独立 Gravity diagnostics 视图，提供同尺度 BEV/高程
+  地图对比以及 common-up p95、joint ATE、闭环局部地图 p95 和运行时间卡片。
+- 页面明确展示 mixed result：倾斜与 joint ATE 改善，但闭环局部 p95 增加
+  9.3 mm，当前 Python 诊断约慢 152 倍；因此不替换 K75 或最终 Batch 后端。
+- 增加地图导出/附加脚本、冻结哈希与 schema 校验、3 个采样逻辑测试，并在
+  启动器中强制检查 offline-only 决策、GT-free 选择和地图文件哈希。
+
 ## 2026-11-17 — Odometry / Batch / iSAM2 完整受控对比
 
 - 在同一冻结 5796 节点、5794 odometry、75 loop、1 prior 图上实现三个独立

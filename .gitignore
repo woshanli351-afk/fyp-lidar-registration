@@ -10,6 +10,8 @@ __pycache__/
 *.pem
 *.key
 data/
+!demo/progressive_replay_v2/data/
+!demo/progressive_replay_v2/data/gravity_map.json
 data_raw/
 external/
 extern/

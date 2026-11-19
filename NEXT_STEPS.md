@@ -16,7 +16,8 @@
    100% 距最近闭环端点超过 300 keyframe。覆盖较好的 Robot1→Robot3 p95
    反而改善 2.84%，确认原全地图尾部主要是覆盖指标伪影。
 8. 75 个闭环局部的 soft p95 在五组设置下仍一致增加 9–22 mm，当前 Python
-   因子求解约 62 s；所以 hard/soft Gravity 仍不进入 Demo、原生因子或 iSAM2。
+   因子求解约 62 s；所以 hard/soft Gravity 仍不进入最终后端、原生因子或
+   iSAM2。Demo 只增加了明确标为 offline-only 的诊断页，不得把它解释为采用。
 9. Loop Admission 真实统计已完成：当前 Rank-1 后端为
    `2000 -> 1233 -> 120 -> 75`，历史 Top-3 为 `2000 -> 1403 -> 139`。
    完整 pre-sanitation Rank-1 逐查询表未公开，因此 1233 来自冻结 summary；

@@ -17,6 +17,7 @@
       <div class="view-switch" aria-label="Demo view">
         <button id="systemView" class="active">System view</button>
         <button id="analysisView">Analysis</button>
+        <button id="gravityView">Gravity diagnostics</button>
       </div>
       <div class="badges"><span>RECORDED REPLAY</span><span>GT-FREE ONLINE FIELDS</span></div>
     </div>
@@ -99,6 +100,46 @@
       <canvas id="efficiencyChart" width="760" height="280"></canvas>
       <div class="chart-key"><span><i class="latency"></i>p95 latency</span><span><i class="budget"></i>500 ms budget</span><span><i class="calls"></i>Mean GICP calls</span></div>
       <p id="efficiencyInsight" class="chart-insight"></p>
+    </section>
+
+    <section id="gravityDiagnostics" class="panel gravity-diagnostics" aria-labelledby="gravityTitle">
+      <div class="gravity-head">
+        <div>
+          <p class="eyebrow">OFFLINE DIAGNOSTIC · FROZEN ROBOT1 + ROBOT3 GRAPH</p>
+          <h1 id="gravityTitle">Does Soft Gravity improve the map?</h1>
+          <p class="gravity-lead">A real Free Pose3 versus Soft Gravity ×8 replay using the same 5,796 nodes and 75 accepted inter-robot loops.</p>
+        </div>
+        <span class="gravity-status">NOT IN FINAL BACK END</span>
+      </div>
+
+      <div class="gravity-kpis">
+        <article><small>Common-up p95 · GT-free selection</small><b><span id="gravityUpFree">—</span><i>→</i><span id="gravityUpSoft" class="positive">—</span></b><p>Gravity removes the diagnosed roll/pitch disagreement.</p></article>
+        <article><small>Joint ATE RMSE · offline GT evaluation</small><b><span id="gravityAteFree">—</span><i>→</i><span id="gravityAteSoft" class="positive">—</span></b><p id="gravityAteChange">—</p></article>
+        <article><small>Accepted-loop local map p95</small><b><span id="gravityMapFree">—</span><i>→</i><span id="gravityMapSoft" class="negative">—</span></b><p id="gravityMapChange">—</p></article>
+        <article><small>Current solver runtime</small><b><span id="gravityTimeFree">—</span><i>→</i><span id="gravityTimeSoft" class="negative">—</span></b><p id="gravityTimeChange">—</p></article>
+      </div>
+
+      <section class="gravity-map-panel">
+        <div class="panel-head compact">
+          <div><p class="eyebrow">REAL MAP RECONSTRUCTION</p><h2>Same sampling and scale, two frozen trajectories</h2></div>
+          <div class="gravity-map-switch" aria-label="Gravity map projection">
+            <button id="gravityBev" class="active">BEV · x/y</button>
+            <button id="gravityElevation">Elevation</button>
+          </div>
+        </div>
+        <div class="gravity-map-grid">
+          <article><header><b>Free Pose3</b><span>Current K75 optimization model</span></header><canvas id="gravityFreeMap" width="760" height="440"></canvas></article>
+          <article><header><b>Soft Gravity ×8</b><span>5,794 covariance-weighted gravity factors</span></header><canvas id="gravitySoftMap" width="760" height="440"></canvas></article>
+        </div>
+        <p id="gravityProjectionNote" class="gravity-footnote">Bird's-eye view uses identical x/y bounds. Cyan is Robot1; orange is Robot3.</p>
+      </section>
+
+      <div class="gravity-verdict-grid">
+        <article class="benefit"><small>WHAT IMPROVED</small><h3>Tilt and global trajectory error</h3><p id="gravityBenefit">—</p></article>
+        <article class="guardrail"><small>WHAT DID NOT IMPROVE</small><h3>Local map consistency gate</h3><p id="gravityGuardrail">—</p></article>
+        <article class="decision"><small>SYSTEM DECISION</small><h3>Keep Gravity offline-only</h3><p id="gravityDecision">—</p></article>
+      </div>
+      <p class="gravity-source">Map points are a GT-free presentation export: every 10th keyframe, every 16th LiDAR point, 1–60 m range, 0.5 m voxelization, then a deterministic display sample. GT is used only for the explicitly labelled ATE card.</p>
     </section>
   </main>
 

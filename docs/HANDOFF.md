@@ -121,6 +121,8 @@ Demo 位于 `demo/progressive_replay_v2/`，包含：
 - Robot1/Robot3 六阶段轨迹与地图重放；
 - K1/K10/K75 冻结 batch 地图快照；
 - 系统视图和分析视图；
+- 独立 Gravity diagnostics 视图：真实 Free/Soft ×8 点云地图的 BEV/高程对比、
+  GT-free 倾斜指标、离线 ATE、闭环局部地图门槛和运行成本；
 - 可选卫星/GNSS 参考底图；
 - 播放、暂停、阶段跳转、重置和全屏控制。
 
@@ -137,12 +139,16 @@ python scripts/serve_progressive_demo.py
 - `R`：重置；
 - `Fullscreen`：全屏；
 - K1/K10/K75：查看对应冻结地图快照。
+- `Gravity diagnostics`：进入独立诊断页；`BEV / Elevation` 切换同尺度地图投影。
 
 Demo 由本机 HTTP 服务提供。`127.0.0.1` 只能被运行服务的电脑访问；其他人可克隆仓库后本地启动。若要公开访问，应另行部署静态文件或通过受控网络入口转发，不能公开服务器凭据。
 
 卫星底图需要联网；离线时仍可使用 LiDAR 视图。更完整的构建和声明边界见 [Demo README](../demo/progressive_replay_v2/README.md) 与 [运行指南](RUNNING.md)。
 
 演示时必须明确：浏览器播放的是预计算结果；它不在浏览器内运行 SC、GICP 或 GTSAM，也不代表实时同步采集或已验收的增量 iSAM2。
+Gravity 页面同样是冻结离线诊断：soft ×8 改善倾斜和 joint ATE，但闭环局部
+地图 p95 增加 9.3 mm，当前 Python 实现约慢 152 倍。因此它没有替换 K75，
+也没有进入最终 Batch 后端。
 
 ## 6. 文件和证据位置
 
@@ -159,7 +165,8 @@ Demo 由本机 HTTP 服务提供。`127.0.0.1` 只能被运行服务的电脑访
 | Stage 11 公开摘要 | `results/cumulti_stage11/` |
 | 数据质量公开摘要 | `results/cumulti_robot13_data_quality/` |
 | Demo | `demo/progressive_replay_v2/` |
-| Demo 构建/启动脚本 | `scripts/build_progressive_replay_demo.py`、`scripts/serve_progressive_demo.py` |
+| Demo 构建/启动脚本 | `scripts/build_progressive_replay_demo.py`、`scripts/add_gravity_replay_data.py`、`scripts/serve_progressive_demo.py` |
+| Gravity 地图展示导出 | `src/cumulti/export_pgo_gravity_demo_map.py` |
 | SC/GICP 通用 backend | `src/cumulti/gicp_value_backend.py` |
 
 完整查询级 CSV、原始点云、GT、模型权重、服务器路径和登录凭据不在 Git 中。它们必须通过私密渠道交接，并在实验 manifest 中记录哈希；不要写入公开文档或提交历史。

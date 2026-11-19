@@ -1,10 +1,12 @@
 # CU-Multi Progressive Mapping Replay V2
 
-This static demo combines two frozen, independently generated result sets:
+This static demo combines three frozen, independently generated result sets:
 
 - Stage 11 aggregate SC/GICP accuracy and latency metrics from this repository.
 - The team repository's Stage 12D stable-segment clean backend and Stage 13A
   batch K1/K10/K75 snapshots.
+- The frozen Soft Gravity ×8 diagnostic, including aggregate evaluation metrics
+  and a GT-free Free/Soft map reconstruction sampled from the original LiDAR.
 
 The replay is presentation software. It does not run Scan Context, GICP or
 GTSAM in the browser, and it does not claim live sensing, a causal online
@@ -38,6 +40,27 @@ is excluded from Scan Context, GICP acceptance and pose-graph optimisation.
 Satellite tiles require network access and fall back to a dark tile grid when
 unavailable.
 
+Add or refresh the Gravity diagnostic after building the main bundle:
+
+```bash
+python src/cumulti/export_pgo_gravity_demo_map.py \
+  --free-trajectory /path/to/free_pose3_replay_trajectory.csv \
+  --soft-trajectory /path/to/ekf_gravity_soft_cov_x8_trajectory.csv \
+  --robot1-keyframes /path/to/robot1/keyframes.csv \
+  --robot3-keyframes /path/to/robot3/keyframes.csv \
+  --robot1-lidar-root /path/to/robot1/lidar \
+  --robot3-lidar-root /path/to/robot3/lidar \
+  --output /path/to/gravity_demo_map.json
+
+python scripts/add_gravity_replay_data.py \
+  --map-export /path/to/gravity_demo_map.json
+```
+
+The exporter loads only `keyframe_id` and `lidar_file` from the processed
+keyframe tables. It never loads their GT pose columns. The attachment script
+checks the frozen Free/Soft trajectory hashes and the corrected offline-only
+decision before updating the static demo bundle.
+
 ## Run locally
 
 ```bash
@@ -61,6 +84,14 @@ multi-robot SLAM demonstrations: a large common-frame map, colour-coded robot
 trajectories, moving robot markers and accumulating inter-robot constraints.
 The **Analysis** view retains the source-backed SC/GICP accuracy, latency and
 registration diagnostics.
+
+The **Gravity diagnostics** view compares the real Free Pose3 and Soft Gravity
+×8 map reconstructions at the same scale. It exposes both BEV and elevation
+projections, separates GT-free selection from explicitly labelled offline GT
+evaluation, and reports the accepted-loop local map gate. The conclusion is
+deliberately negative: tilt and joint ATE improve, but the local map p95 rises
+by 9.3 mm and the current Python diagnostic is about 152× slower. Gravity does
+not replace the frozen K75 Batch PGO map or enter the final backend.
 
 Use the **Satellite / LiDAR** control in System view to switch between the
 dual-GNSS geographic reference and the frozen batch LiDAR snapshots.

@@ -85,8 +85,10 @@ KITTI CVTNet 使用公开 NCLT checkpoint 做跨数据集迁移；它没有提�
 `demo/progressive_replay_v2/` combines the frozen Stage 11 accuracy/latency
 metrics with the team repository's stable-segment clean batch map snapshots.
 It includes direction-switchable accuracy and efficiency panels plus a six-stage
-Robot1/Robot3 mapping replay. See the demo README for the local launch command
-and its explicit offline claim boundary.
+Robot1/Robot3 mapping replay. A separate Gravity diagnostics view now compares
+the real Free Pose3 and Soft Gravity ×8 map reconstructions in BEV/elevation,
+while preserving the negative offline-only adoption decision. See the demo
+README for the local launch command and its explicit claim boundaries.
 
 ## 目录
 
@@ -117,6 +119,7 @@ python -m unittest discover -s src/kitti -p test_pipeline.py -v
 python -m unittest discover -s src/cumulti -p test_stage11_gicp_value.py -v
 python -m unittest discover -s src/cumulti -p test_loop_admission.py -v
 python -m unittest discover -s src/cumulti -p test_pgo_backend_comparison.py -v
+python -m unittest discover -s src/cumulti -p test_export_pgo_gravity_demo_map.py -v
 python src/cumulti/gicp_value_backend.py --help
 python src/cumulti/run_stage11_gicp_value_study.py --help
 ```

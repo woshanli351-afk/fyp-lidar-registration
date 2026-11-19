@@ -7,21 +7,23 @@ const STAGES=[
   {p:.58,title:'Progressive batch fusion',note:'Accepted constraints accumulate through stable K10 batch snapshots.',snap:'K10'},
   {p:.90,title:'Final clean map',note:'All 75 frozen clean loop factors produce the final K75 batch result.',snap:'K75'}
 ];
-let D=null,S={p:0,playing:false,speed:1,mapOverride:null,view:'system',mapMode:'satellite'},last=0;
+let D=null,G=null,gravityLoad=null,S={p:0,playing:false,speed:1,mapOverride:null,view:'system',mapMode:'satellite',gravityMapMode:'bev'},last=0;
 const $=q=>document.querySelector(q),$$=q=>[...document.querySelectorAll(q)];
 const tileCache=new Map();
 
-fetch('data/demo.json').then(r=>{if(!r.ok)throw new Error(`data/demo.json ${r.status}`);return r.json()}).then(data=>{D=data;const params=new URLSearchParams(location.search),preview=Number(params.get('p'));if(Number.isFinite(preview))S.p=Math.max(0,Math.min(1,preview));if(params.get('view')==='analysis')S.view='analysis';if(params.get('map')==='lidar'||!D.geospatial)S.mapMode='lidar';bind();render();requestAnimationFrame(tick)}).catch(error=>{$('#sceneTitle').textContent='Demo data failed to load';console.error(error)});
+fetch('data/demo.json').then(r=>{if(!r.ok)throw new Error(`data/demo.json ${r.status}`);return r.json()}).then(data=>{D=data;const params=new URLSearchParams(location.search),preview=Number(params.get('p')),view=params.get('view');if(Number.isFinite(preview))S.p=Math.max(0,Math.min(1,preview));if(['analysis','gravity'].includes(view))S.view=view;if(params.get('map')==='lidar'||!D.geospatial)S.mapMode='lidar';bind();render();if(S.view==='gravity')loadGravityMap();requestAnimationFrame(tick)}).catch(error=>{$('#sceneTitle').textContent='Demo data failed to load';console.error(error)});
 
 function bind(){
-  document.body.classList.toggle('system-view',S.view==='system');
+  updateViewClasses();
   $('#systemView').classList.toggle('active',S.view==='system');
   $('#analysisView').classList.toggle('active',S.view==='analysis');
+  $('#gravityView').classList.toggle('active',S.view==='gravity');
   $('#satelliteMode').classList.toggle('active',S.mapMode==='satellite');
   $('#lidarMode').classList.toggle('active',S.mapMode==='lidar');
   $('#satelliteMode').disabled=!D.geospatial;
   $('#systemView').onclick=()=>setView('system');
   $('#analysisView').onclick=()=>setView('analysis');
+  $('#gravityView').onclick=()=>setView('gravity');
   $('#satelliteMode').onclick=()=>setMapMode('satellite');
   $('#lidarMode').onclick=()=>setMapMode('lidar');
   $('#play').onclick=togglePlay;
@@ -33,12 +35,18 @@ function bind(){
   $$('.snapshot-dots button').forEach(button=>button.onclick=()=>{S.mapOverride=button.dataset.map;renderMap()});
   $('#accuracyDirection').onchange=renderAccuracy;
   $('#efficiencyDirection').onchange=renderEfficiency;
+  $('#gravityBev').onclick=()=>setGravityMapMode('bev');
+  $('#gravityElevation').onclick=()=>setGravityMapMode('elevation');
   document.addEventListener('keydown',event=>{
     if(event.target.matches('select,input'))return;
     if(event.code==='Space'){event.preventDefault();togglePlay()}
     else if(event.key.toLowerCase()==='r')resetReplay();
     else if(/^[1-6]$/.test(event.key))jumpToStage(Number(event.key)-1);
   });
+}
+
+function updateViewClasses(){
+  for(const view of ['system','analysis','gravity'])document.body.classList.toggle(`${view}-view`,S.view===view);
 }
 
 function setMapMode(mode){
@@ -51,10 +59,19 @@ function setMapMode(mode){
 
 function setView(view){
   S.view=view;
-  document.body.classList.toggle('system-view',view==='system');
+  updateViewClasses();
   $('#systemView').classList.toggle('active',view==='system');
   $('#analysisView').classList.toggle('active',view==='analysis');
+  $('#gravityView').classList.toggle('active',view==='gravity');
+  if(view==='gravity')loadGravityMap();
   render();
+}
+
+function setGravityMapMode(mode){
+  S.gravityMapMode=mode;
+  $('#gravityBev').classList.toggle('active',mode==='bev');
+  $('#gravityElevation').classList.toggle('active',mode==='elevation');
+  renderGravityMaps();
 }
 
 function togglePlay(){S.playing=!S.playing;$('#play').textContent=S.playing?'❚❚ Pause':'▶ Play'}
@@ -80,7 +97,7 @@ function render(){
   const event=activeEvent();$('#systemEvent').textContent=event?`${event.query_robot} #${event.query_keyframe} ↔ ${event.candidate_robot} #${event.candidate_keyframe}`:'Waiting for inter-robot candidate';
   $('#systemQuality').textContent=event&&idx>=2?`${event.gicp_quality.toFixed(4)} / ${D.metadata.gicp_threshold.toFixed(4)} threshold`:'—';
   $$('.stagebar button').forEach((button,index)=>button.classList.toggle('active',index===idx));
-  renderTrajectory();renderEvent();renderMap();renderAccuracy();renderEfficiency();
+  renderTrajectory();renderEvent();renderMap();renderAccuracy();renderEfficiency();renderGravity();
 }
 
 function bounds(groups){
@@ -218,3 +235,82 @@ function chartBase(canvas){const ctx=canvas.getContext('2d'),w=canvas.width,h=ca
 function renderAccuracy(){if(!D)return;const direction=$('#accuracyDirection').value,rows=metric(direction),rank1=rows.find(row=>row.policy==='gicp_rank1'),sc=rows.find(row=>row.policy==='sc_rank1'),g=chartBase($('#accuracyChart')),plotW=g.w-g.left-g.right,plotH=g.h-g.top-g.bottom,minValue=Math.min(...rows.flatMap(row=>[row.precision,row.correct_pair_recall]))<.75?0:.75,step=minValue===0?.25:.05;$('#rank1Precision').textContent=`${(rank1.precision*100).toFixed(2)}%`;$('#rank1Recall').textContent=`${(rank1.correct_pair_recall*100).toFixed(2)}%`;$('#rank1Hazards').textContent=`${rank1.mapping_hazard_event_count} events`;$('#accuracyInsight').innerHTML=`Rank-1 GICP reduces protocol false positives from <b>${sc.protocol_fp_query_count.toLocaleString()}</b> to <b>${rank1.protocol_fp_query_count}</b>; accepted edges retain a metric pose.`;g.ctx.strokeStyle='#20384e';g.ctx.fillStyle=COLORS.muted;for(let p=minValue;p<=1.0001;p+=step){const y=g.top+(1-p)/(1-minValue)*plotH;g.ctx.beginPath();g.ctx.moveTo(g.left,y);g.ctx.lineTo(g.w-g.right,y);g.ctx.stroke();g.ctx.fillText(`${Math.round(p*100)}%`,g.left-36,y+4)}const group=plotW/rows.length;rows.forEach((row,i)=>{const x=g.left+i*group+group*.18,bw=group*.25;for(const [j,key,color] of [[0,'precision',COLORS.green],[1,'correct_pair_recall',COLORS.purple]]){const v=row[key],height=Math.max(0,(v-minValue)/(1-minValue)*plotH),y=g.top+plotH-height;g.ctx.fillStyle=color;g.ctx.fillRect(x+j*(bw+4),y,bw,height);g.ctx.fillStyle='#d6e5f3';g.ctx.font='9px system-ui';g.ctx.textAlign='center';g.ctx.fillText(`${(v*100).toFixed(1)}%`,x+j*(bw+4)+bw/2,Math.max(g.top+10,y-5))}g.ctx.font='11px system-ui';g.ctx.fillStyle='#9bb2c7';g.ctx.textAlign='center';g.ctx.fillText(shortLabel(row.policy),x+bw,g.h-19)});g.ctx.textAlign='left'}
 function shortLabel(policy){return({sc_rank1:'SC',sc_score_gate:'SC gate',gicp_rank1:'R1 GICP',gicp_top3:'Top3',selective_gicp:'Selective'})[policy]}
 function renderEfficiency(){if(!D)return;const direction=$('#efficiencyDirection').value,rows=metric(direction),rank1=rows.find(row=>row.policy==='gicp_rank1'),top3=rows.find(row=>row.policy==='gicp_top3'),g=chartBase($('#efficiencyChart')),plotW=g.w-g.left-g.right,plotH=g.h-g.top-g.bottom,max=500;$('#rank1P95').textContent=`${rank1.p95_ms.toFixed(1)} ms`;$('#budgetHeadroom').textContent=`${(500-rank1.p95_ms).toFixed(1)} ms`;$('#rank1Calls').textContent=rank1.mean_gicp_calls.toFixed(2);$('#efficiencyInsight').innerHTML=`Rank-1 stays <b>${(500-rank1.p95_ms).toFixed(1)} ms</b> below the 500 ms budget; Top-3 raises p95 to <b>${top3.p95_ms.toFixed(1)} ms</b>.`;g.ctx.strokeStyle=COLORS.red;g.ctx.setLineDash([6,5]);g.ctx.beginPath();g.ctx.moveTo(g.left,g.top);g.ctx.lineTo(g.w-g.right,g.top);g.ctx.stroke();g.ctx.setLineDash([]);g.ctx.fillStyle=COLORS.red;g.ctx.fillText('500 ms',g.left-51,g.top+4);const group=plotW/rows.length;rows.forEach((row,i)=>{const x=g.left+i*group+group*.19,bw=group*.42,height=row.p95_ms/max*plotH,y=g.top+plotH-height;g.ctx.fillStyle=COLORS.cyan;g.ctx.fillRect(x,y,bw,height);g.ctx.fillStyle='#d6e5f3';g.ctx.textAlign='center';g.ctx.fillText(`${row.p95_ms.toFixed(0)} ms`,x+bw/2,Math.max(g.top+12,y-7));if(row.mean_gicp_calls>0){g.ctx.fillStyle=COLORS.yellow;g.ctx.beginPath();g.ctx.arc(x+bw/2,g.top+plotH-(row.mean_gicp_calls/3)*plotH,5,0,Math.PI*2);g.ctx.fill()}g.ctx.fillStyle='#9bb2c7';g.ctx.fillText(shortLabel(row.policy),x+bw/2,g.h-19)});g.ctx.textAlign='left'}
+
+function loadGravityMap(){
+  if(G||gravityLoad||!D?.gravity_diagnostic)return gravityLoad;
+  const file=D.gravity_diagnostic.map_export.file;
+  gravityLoad=fetch(file).then(response=>{
+    if(!response.ok)throw new Error(`${file} ${response.status}`);
+    return response.json();
+  }).then(data=>{
+    if(data.schema!=='FYP_GRAVITY_DEMO_MAP_V1'||data.mode!=='GT_FREE_PRESENTATION_EXPORT')throw new Error('Unexpected Gravity map schema');
+    G=data;renderGravityMaps();return data;
+  }).catch(error=>{
+    console.error(error);drawGravityMessage(`Gravity map failed to load: ${error.message}`);throw error;
+  });
+  drawGravityMessage('Loading GT-free map reconstruction…');
+  return gravityLoad;
+}
+
+function renderGravity(){
+  if(!D?.gravity_diagnostic)return;
+  const g=D.gravity_diagnostic,selection=g.selection,evaluation=g.offline_evaluation,map=g.map_quality,runtime=g.runtime;
+  $('#gravityUpFree').textContent=`${selection.free_common_up_p95_deg.toFixed(2)}°`;
+  $('#gravityUpSoft').textContent=`${selection.soft_common_up_p95_deg.toFixed(2)}°`;
+  $('#gravityAteFree').textContent=`${evaluation.free_joint_ate_rmse_m.toFixed(2)} m`;
+  $('#gravityAteSoft').textContent=`${evaluation.soft_joint_ate_rmse_m.toFixed(2)} m`;
+  $('#gravityAteChange').textContent=`${Math.abs(evaluation.joint_ate_relative_change_percent).toFixed(1)}% lower after the frozen GT-free variant selection.`;
+  $('#gravityMapFree').textContent=`${map.free_loop_local_p95_m.toFixed(3)} m`;
+  $('#gravityMapSoft').textContent=`${map.soft_loop_local_p95_m.toFixed(3)} m`;
+  $('#gravityMapChange').textContent=`+${(map.loop_local_p95_delta_m*1000).toFixed(1)} mm; the no-worsening gate is not met.`;
+  $('#gravityTimeFree').textContent=`${runtime.free_s.toFixed(2)} s`;
+  $('#gravityTimeSoft').textContent=`${runtime.soft_s.toFixed(2)} s`;
+  $('#gravityTimeChange').textContent=`${runtime.soft_over_free_ratio.toFixed(0)}× slower in the current Python diagnostic implementation.`;
+  $('#gravityBenefit').textContent=`Common-up p95 falls by ${(selection.free_common_up_p95_deg-selection.soft_common_up_p95_deg).toFixed(2)}°, joint ATE falls by ${Math.abs(evaluation.joint_ate_relative_change_percent).toFixed(1)}%, and the better-covered Robot1→Robot3 map p95 falls from ${map.free_directional_p95_m.toFixed(3)} m to ${map.soft_directional_p95_m.toFixed(3)} m.`;
+  $('#gravityGuardrail').textContent=`Across the 75 accepted-loop neighbourhoods, pooled p95 rises by ${(map.loop_local_p95_delta_m*1000).toFixed(1)} mm. ${map.loops_with_lower_p95} loops improve and ${map.loops_with_higher_p95} worsen, so the map-level benefit is not consistent.`;
+  $('#gravityDecision').textContent=`${g.decision.summary} The frozen K75 Batch PGO map remains the final Demo output.`;
+  renderGravityMaps();
+}
+
+function drawGravityMessage(message){
+  for(const selector of ['#gravityFreeMap','#gravitySoftMap']){
+    const canvas=$(selector),ctx=canvas.getContext('2d');ctx.fillStyle='#07111e';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#8fa7bf';ctx.font='13px system-ui';ctx.textAlign='center';ctx.fillText(message,canvas.width/2,canvas.height/2);ctx.textAlign='left';
+  }
+}
+
+function gravityProjection(){
+  const all=[];
+  for(const variant of ['free','soft_x8'])for(const robot of ['robot1','robot3'])for(const point of G.variants[variant][robot])all.push(point);
+  if(S.gravityMapMode==='bev')return{label:'Bird\'s-eye view uses identical x/y bounds. Cyan is Robot1; orange is Robot3.',project:p=>[p[0],p[1]]};
+  let mx=0,my=0;for(const p of all){mx+=p[0];my+=p[1]}mx/=all.length;my/=all.length;
+  let xx=0,xy=0,yy=0;for(const p of all){const x=p[0]-mx,y=p[1]-my;xx+=x*x;xy+=x*y;yy+=y*y}
+  const angle=.5*Math.atan2(2*xy,xx-yy),ax=Math.cos(angle),ay=Math.sin(angle);
+  return{label:'Elevation view projects horizontal position onto the shared principal travel axis and plots z with identical bounds.',project:p=>[(p[0]-mx)*ax+(p[1]-my)*ay,p[2]]};
+}
+
+function gravityPlotPoint(point,bounds,w,h){
+  const margin=38,scale=Math.min((w-margin*2)/(bounds[2]-bounds[0]),(h-margin*2)/(bounds[3]-bounds[1])),ox=(w-(bounds[2]-bounds[0])*scale)/2,oy=(h-(bounds[3]-bounds[1])*scale)/2;
+  return[ox+(point[0]-bounds[0])*scale,h-oy-(point[1]-bounds[1])*scale];
+}
+
+function renderGravityMaps(){
+  if(!G){if(D?.gravity_diagnostic&&!gravityLoad)loadGravityMap();return}
+  const projection=gravityProjection(),projected={};let all=[];
+  for(const variant of ['free','soft_x8']){
+    projected[variant]={};
+    for(const robot of ['robot1','robot3']){
+      projected[variant][robot]=G.variants[variant][robot].map(projection.project);all=all.concat(projected[variant][robot]);
+    }
+  }
+  const xs=all.map(p=>p[0]),ys=all.map(p=>p[1]),span=Math.max(Math.max(...xs)-Math.min(...xs),Math.max(...ys)-Math.min(...ys)),pad=Math.max(4,span*.035),bounds=[Math.min(...xs)-pad,Math.min(...ys)-pad,Math.max(...xs)+pad,Math.max(...ys)+pad];
+  for(const [selector,variant] of [['#gravityFreeMap','free'],['#gravitySoftMap','soft_x8']]){
+    const canvas=$(selector),ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;ctx.fillStyle='#07111e';ctx.fillRect(0,0,w,h);ctx.strokeStyle='#183149';ctx.lineWidth=1;
+    for(let i=1;i<6;i++){const x=w*i/6,y=h*i/6;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}
+    for(const [robot,color] of [['robot1',COLORS.r1],['robot3',COLORS.r3]]){
+      ctx.fillStyle=color;ctx.globalAlpha=.56;
+      for(const point of projected[variant][robot]){const u=gravityPlotPoint(point,bounds,w,h);ctx.fillRect(u[0],u[1],1.55,1.55)}
+    }
+    ctx.globalAlpha=1;ctx.fillStyle='#a8bfd3';ctx.font='11px ui-monospace,monospace';ctx.fillText(`${S.gravityMapMode==='bev'?'X / Y':'PRINCIPAL AXIS / Z'} · SAME SCALE`,14,21);
+  }
+  $('#gravityProjectionNote').textContent=projection.label;
+}
