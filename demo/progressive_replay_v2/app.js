@@ -7,11 +7,11 @@ const STAGES=[
   {p:.58,title:'Progressive batch fusion',note:'Accepted constraints accumulate through stable K10 batch snapshots.',snap:'K10'},
   {p:.90,title:'Final clean map',note:'All 75 frozen clean loop factors produce the final K75 batch result.',snap:'K75'}
 ];
-let D=null,G=null,gravityLoad=null,S={p:0,playing:false,speed:1,mapOverride:null,view:'system',mapMode:'satellite',gravityMapMode:'bev'},last=0;
+let D=null,G=null,gravityLoad=null,gravityLastDraw=0,S={p:0,playing:false,speed:1,mapOverride:null,view:'system',mapMode:'satellite',gravityMapMode:'bev',gravityProgress:0,gravityPlaying:false,gravitySpeed:1,gravityStarted:false},last=0;
 const $=q=>document.querySelector(q),$$=q=>[...document.querySelectorAll(q)];
 const tileCache=new Map();
 
-fetch('data/demo.json').then(r=>{if(!r.ok)throw new Error(`data/demo.json ${r.status}`);return r.json()}).then(data=>{D=data;const params=new URLSearchParams(location.search),preview=Number(params.get('p')),view=params.get('view');if(Number.isFinite(preview))S.p=Math.max(0,Math.min(1,preview));if(['analysis','gravity'].includes(view))S.view=view;if(params.get('map')==='lidar'||!D.geospatial)S.mapMode='lidar';bind();render();if(S.view==='gravity')loadGravityMap();requestAnimationFrame(tick)}).catch(error=>{$('#sceneTitle').textContent='Demo data failed to load';console.error(error)});
+fetch('data/demo.json').then(r=>{if(!r.ok)throw new Error(`data/demo.json ${r.status}`);return r.json()}).then(data=>{D=data;const params=new URLSearchParams(location.search),preview=Number(params.get('p')),view=params.get('view');if(Number.isFinite(preview))S.p=Math.max(0,Math.min(1,preview));if(['analysis','gravity'].includes(view))S.view=view;if(params.get('map')==='lidar'||!D.geospatial)S.mapMode='lidar';bind();render();if(S.view==='gravity')loadGravityMap().then(()=>startGravityReplay());requestAnimationFrame(tick)}).catch(error=>{$('#sceneTitle').textContent='Demo data failed to load';console.error(error)});
 
 function bind(){
   updateViewClasses();
@@ -37,11 +37,15 @@ function bind(){
   $('#efficiencyDirection').onchange=renderEfficiency;
   $('#gravityBev').onclick=()=>setGravityMapMode('bev');
   $('#gravityElevation').onclick=()=>setGravityMapMode('elevation');
+  $('#gravityPlay').onclick=toggleGravityReplay;
+  $('#gravityReset').onclick=resetGravityReplay;
+  $('#gravitySpeed').onchange=event=>S.gravitySpeed=+event.target.value;
+  $('#gravityTimeline').oninput=event=>{S.gravityProgress=+event.target.value/1000;S.gravityPlaying=false;S.gravityStarted=true;renderGravityMaps()};
   document.addEventListener('keydown',event=>{
     if(event.target.matches('select,input'))return;
-    if(event.code==='Space'){event.preventDefault();togglePlay()}
-    else if(event.key.toLowerCase()==='r')resetReplay();
-    else if(/^[1-6]$/.test(event.key))jumpToStage(Number(event.key)-1);
+    if(event.code==='Space'){event.preventDefault();S.view==='gravity'?toggleGravityReplay():togglePlay()}
+    else if(event.key.toLowerCase()==='r')S.view==='gravity'?resetGravityReplay():resetReplay();
+    else if(S.view!=='gravity'&&/^[1-6]$/.test(event.key))jumpToStage(Number(event.key)-1);
   });
 }
 
@@ -63,7 +67,8 @@ function setView(view){
   $('#systemView').classList.toggle('active',view==='system');
   $('#analysisView').classList.toggle('active',view==='analysis');
   $('#gravityView').classList.toggle('active',view==='gravity');
-  if(view==='gravity')loadGravityMap();
+  if(view==='gravity')loadGravityMap().then(()=>{if(!S.gravityStarted)startGravityReplay()});
+  else if(S.gravityPlaying){S.gravityPlaying=false;updateGravityReplayControls()}
   render();
 }
 
@@ -78,8 +83,17 @@ function togglePlay(){S.playing=!S.playing;$('#play').textContent=S.playing?'❚
 function resetReplay(){S.p=0;S.playing=false;S.mapOverride=null;$('#play').textContent='▶ Play';render()}
 function jumpToStage(index){S.p=STAGES[index].p;S.playing=false;S.mapOverride=null;$('#play').textContent='▶ Play';render()}
 
+function startGravityReplay(){S.gravityProgress=0;S.gravityPlaying=true;S.gravityStarted=true;updateGravityReplayControls();renderGravityMaps()}
+function toggleGravityReplay(){if(S.gravityProgress>=1)S.gravityProgress=0;S.gravityPlaying=!S.gravityPlaying;S.gravityStarted=true;updateGravityReplayControls();renderGravityMaps()}
+function resetGravityReplay(){S.gravityProgress=0;S.gravityPlaying=false;S.gravityStarted=true;updateGravityReplayControls();renderGravityMaps()}
+
 function tick(time){
   if(D&&S.playing){S.p=Math.min(1,S.p+(time-last)/60000*S.speed);if(S.p===1){S.playing=false;$('#play').textContent='▶ Play'}render()}
+  if(G&&S.view==='gravity'&&S.gravityPlaying){
+    S.gravityProgress=Math.min(1,S.gravityProgress+(time-last)/14000*S.gravitySpeed);
+    if(S.gravityProgress===1)S.gravityPlaying=false;
+    if(time-gravityLastDraw>=30||S.gravityProgress===1){gravityLastDraw=time;renderGravityMaps()}
+  }
   last=time;requestAnimationFrame(tick);
 }
 
@@ -243,7 +257,7 @@ function loadGravityMap(){
     if(!response.ok)throw new Error(`${file} ${response.status}`);
     return response.json();
   }).then(data=>{
-    if(data.schema!=='FYP_GRAVITY_DEMO_MAP_V1'||data.mode!=='GT_FREE_PRESENTATION_EXPORT')throw new Error('Unexpected Gravity map schema');
+    if(data.schema!=='FYP_GRAVITY_DEMO_MAP_V2'||data.mode!=='GT_FREE_PRESENTATION_EXPORT')throw new Error('Unexpected Gravity map schema');
     G=data;renderGravityMaps();return data;
   }).catch(error=>{
     console.error(error);drawGravityMessage(`Gravity map failed to load: ${error.message}`);throw error;
@@ -278,6 +292,20 @@ function drawGravityMessage(message){
   }
 }
 
+function gravityKeyframe(robot){
+  if(!G)return 0;
+  const [start,end]=G.keyframe_ranges[robot];
+  return Math.round(start+(end-start)*S.gravityProgress);
+}
+
+function updateGravityReplayControls(){
+  if(!D)return;
+  $('#gravityTimeline').value=Math.round(S.gravityProgress*1000);
+  $('#gravityPlay').textContent=S.gravityPlaying?'❚❚ Pause reconstruction':'▶ Play reconstruction';
+  const percent=Math.round(S.gravityProgress*100),phase=percent<35?'LOCAL MAP ACCUMULATION':percent<75?'CROSS-ROBOT OVERLAP':'FINAL MAP BUILD';
+  $('#gravityReplayLabel').textContent=G?`${phase} · R1 KF ${gravityKeyframe('robot1')} · R3 KF ${gravityKeyframe('robot3')} · ${percent}%`:`LOADING MAP DATA · ${percent}%`;
+}
+
 function gravityProjection(){
   const all=[];
   for(const variant of ['free','soft_x8'])for(const robot of ['robot1','robot3'])for(const point of G.variants[variant][robot])all.push(point);
@@ -294,6 +322,7 @@ function gravityPlotPoint(point,bounds,w,h){
 }
 
 function renderGravityMaps(){
+  updateGravityReplayControls();
   if(!G){if(D?.gravity_diagnostic&&!gravityLoad)loadGravityMap();return}
   const projection=gravityProjection(),projected={};let all=[];
   for(const variant of ['free','soft_x8']){
@@ -307,10 +336,12 @@ function renderGravityMaps(){
     const canvas=$(selector),ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;ctx.fillStyle='#07111e';ctx.fillRect(0,0,w,h);ctx.strokeStyle='#183149';ctx.lineWidth=1;
     for(let i=1;i<6;i++){const x=w*i/6,y=h*i/6;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}
     for(const [robot,color] of [['robot1',COLORS.r1],['robot3',COLORS.r3]]){
-      ctx.fillStyle=color;ctx.globalAlpha=.56;
-      for(const point of projected[variant][robot]){const u=gravityPlotPoint(point,bounds,w,h);ctx.fillRect(u[0],u[1],1.55,1.55)}
+      ctx.fillStyle=color;ctx.globalAlpha=.055;
+      for(const point of projected[variant][robot]){const u=gravityPlotPoint(point,bounds,w,h);ctx.fillRect(u[0],u[1],1.35,1.35)}
+      const [start,end]=G.keyframe_ranges[robot],cutoff=start+(end-start)*S.gravityProgress,source=G.variants[variant][robot];ctx.globalAlpha=.72;
+      for(let index=0;index<source.length;index++)if(source[index][3]<=cutoff){const u=gravityPlotPoint(projected[variant][robot][index],bounds,w,h);ctx.fillRect(u[0],u[1],1.75,1.75)}
     }
-    ctx.globalAlpha=1;ctx.fillStyle='#a8bfd3';ctx.font='11px ui-monospace,monospace';ctx.fillText(`${S.gravityMapMode==='bev'?'X / Y':'PRINCIPAL AXIS / Z'} · SAME SCALE`,14,21);
+    ctx.globalAlpha=1;ctx.fillStyle='#a8bfd3';ctx.font='11px ui-monospace,monospace';ctx.fillText(`${S.gravityMapMode==='bev'?'X / Y':'PRINCIPAL AXIS / Z'} · SAME SCALE`,14,21);ctx.textAlign='right';ctx.fillStyle=COLORS.green;ctx.fillText(`${Math.round(S.gravityProgress*100)}% RECONSTRUCTED`,w-14,21);ctx.textAlign='left';
   }
   $('#gravityProjectionNote').textContent=projection.label;
 }

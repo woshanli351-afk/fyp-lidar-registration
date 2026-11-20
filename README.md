@@ -87,7 +87,8 @@ metrics with the team repository's stable-segment clean batch map snapshots.
 It includes direction-switchable accuracy and efficiency panels plus a six-stage
 Robot1/Robot3 mapping replay. A separate Gravity diagnostics view now compares
 the real Free Pose3 and Soft Gravity ×8 map reconstructions in BEV/elevation,
-while preserving the negative offline-only adoption decision. See the demo
+with synchronized keyframe-by-keyframe playback, while preserving the negative
+offline-only adoption decision. See the demo
 README for the local launch command and its explicit claim boundaries.
 
 ## 目录

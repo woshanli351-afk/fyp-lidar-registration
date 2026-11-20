@@ -123,7 +123,7 @@ def build_diagnostic(map_export: dict) -> tuple[dict, list[Path]]:
 
 
 def validate_map_export(value: dict) -> None:
-    if value.get("schema") != "FYP_GRAVITY_DEMO_MAP_V1":
+    if value.get("schema") != "FYP_GRAVITY_DEMO_MAP_V2":
         raise ValueError("Unexpected Gravity map schema")
     if value.get("mode") != "GT_FREE_PRESENTATION_EXPORT":
         raise ValueError("Gravity map must be a GT-free presentation export")
@@ -134,8 +134,10 @@ def validate_map_export(value: dict) -> None:
         if set(robots) != {"robot1", "robot3"} or any(not robots[r] for r in robots):
             raise ValueError(f"Incomplete Gravity map variant: {variant}")
         for robot, points in robots.items():
-            if any(len(point) != 3 for point in points):
-                raise ValueError(f"Non-XYZ point in {variant}/{robot}")
+            if any(len(point) != 4 for point in points):
+                raise ValueError(f"Point row must be XYZ plus keyframe ID in {variant}/{robot}")
+    if set(value.get("keyframe_ranges", {})) != {"robot1", "robot3"}:
+        raise ValueError("Gravity map must publish Robot1/Robot3 keyframe ranges")
 
 
 def run(demo_root: Path, map_path: Path) -> None:

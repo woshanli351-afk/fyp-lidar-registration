@@ -7,7 +7,7 @@ import unittest
 
 import numpy as np
 
-from export_pgo_gravity_demo_map import deterministic_sample
+from export_pgo_gravity_demo_map import deterministic_indices, deterministic_sample
 
 
 class DeterministicSampleTest(unittest.TestCase):
@@ -25,6 +25,12 @@ class DeterministicSampleTest(unittest.TestCase):
     def test_rejects_non_positive_limit(self) -> None:
         with self.assertRaisesRegex(ValueError, "positive"):
             deterministic_sample(np.zeros((2, 3)), 0)
+
+    def test_indices_can_sample_points_and_labels_together(self) -> None:
+        indices = deterministic_indices(20, 6)
+        self.assertEqual(indices.tolist(), [0, 3, 7, 11, 15, 19])
+        labels = np.arange(100, 120)
+        self.assertEqual(labels[indices].tolist(), [100, 103, 107, 111, 115, 119])
 
 
 if __name__ == "__main__":

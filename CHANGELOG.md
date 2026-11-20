@@ -1,5 +1,16 @@
 # 更新记录
 
+## 2026-11-20 — Gravity 关键帧动态重建
+
+- Gravity 展示点新增原始 keyframe ID，Free/Soft 两个地图按相同 Robot1/
+  Robot3 采集进度同步累积，不使用点间插值或伪造优化中间状态。
+- 诊断页进入后自动播放，并新增播放/暂停、重置、进度拖动和 0.5×–4× 调速；
+  BEV 与高程投影在回放中继续保持相同坐标边界。
+- 未累积点以低透明度显示最终范围，已累积点高亮；页面继续明确这是冻结离线
+  keyframe replay，不是实时传感、在线 GTSAM 或 Gravity 已进入最终后端。
+- 地图 schema 升级为 V2，启动器强制验证每个点的 keyframe ID 与机器人范围；
+  采样逻辑测试增加点云/标签同步索引检查。
+
 ## 2026-11-19 — Gravity 真实地图诊断页
 
 - 从冻结 Free Pose3 与 soft ×8 轨迹以及原始 Robot1/Robot3 LiDAR 导出 GT-free

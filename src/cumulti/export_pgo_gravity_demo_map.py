@@ -32,18 +32,26 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def deterministic_sample(points: np.ndarray, limit: int) -> np.ndarray:
-    """Return a stable, coverage-preserving sample including both endpoints."""
+def deterministic_indices(length: int, limit: int) -> np.ndarray:
+    """Return stable sample indices including both endpoints."""
     if limit <= 0:
         raise ValueError("point limit must be positive")
-    if len(points) <= limit:
-        return points
-    indices = np.linspace(0, len(points) - 1, limit, dtype=np.int64)
-    return points[indices]
+    if length <= limit:
+        return np.arange(length, dtype=np.int64)
+    return np.linspace(0, length - 1, limit, dtype=np.int64)
 
 
-def compact_points(points: np.ndarray) -> list[list[float]]:
-    return np.round(points.astype(float), 3).tolist()
+def deterministic_sample(points: np.ndarray, limit: int) -> np.ndarray:
+    """Return a stable, coverage-preserving point sample."""
+    return points[deterministic_indices(len(points), limit)]
+
+
+def compact_points(points: np.ndarray, keyframe_ids: np.ndarray) -> list[list[float | int]]:
+    rounded = np.round(points.astype(float), 3)
+    return [
+        [float(point[0]), float(point[1]), float(point[2]), int(keyframe_id)]
+        for point, keyframe_id in zip(rounded, keyframe_ids, strict=True)
+    ]
 
 
 def build_variant(
@@ -51,7 +59,11 @@ def build_variant(
     keyframe_tables: dict[str, Path],
     lidar_roots: dict[str, Path],
     args: argparse.Namespace,
-) -> tuple[dict[str, list[list[float]]], dict[str, int]]:
+) -> tuple[
+    dict[str, list[list[float | int]]],
+    dict[str, int],
+    dict[str, list[int]],
+]:
     trajectory = load_trajectory(trajectory_path)
     maps = build_labeled_map(
         trajectory,
@@ -62,16 +74,22 @@ def build_variant(
         args.range_min_m,
         args.range_max_m,
     )
-    sampled: dict[str, list[list[float]]] = {}
+    sampled: dict[str, list[list[float | int]]] = {}
     counts: dict[str, int] = {}
+    ranges: dict[str, list[int]] = {}
     for robot in ROBOTS:
         points, labels = maps[robot]
-        voxelized, _ = voxel_with_labels(points, labels, args.voxel_m)
+        voxelized, voxel_labels = voxel_with_labels(points, labels, args.voxel_m)
         counts[robot] = int(len(voxelized))
+        indices = deterministic_indices(len(voxelized), args.max_points_per_robot)
         sampled[robot] = compact_points(
-            deterministic_sample(voxelized, args.max_points_per_robot)
+            voxelized[indices], voxel_labels[indices]
         )
-    return sampled, counts
+        trajectory_ids = trajectory.loc[
+            trajectory.robot_id.eq(robot), "keyframe_id"
+        ].to_numpy(dtype=int)
+        ranges[robot] = [int(trajectory_ids.min()), int(trajectory_ids.max())]
+    return sampled, counts, ranges
 
 
 def run(args: argparse.Namespace) -> None:
@@ -83,14 +101,16 @@ def run(args: argparse.Namespace) -> None:
         "robot1": args.robot1_lidar_root.resolve(),
         "robot3": args.robot3_lidar_root.resolve(),
     }
-    free_points, free_counts = build_variant(
+    free_points, free_counts, free_ranges = build_variant(
         args.free_trajectory.resolve(), keyframe_tables, lidar_roots, args
     )
-    soft_points, soft_counts = build_variant(
+    soft_points, soft_counts, soft_ranges = build_variant(
         args.soft_trajectory.resolve(), keyframe_tables, lidar_roots, args
     )
+    if free_ranges != soft_ranges:
+        raise ValueError("Free and Soft trajectories have different keyframe ranges")
     bundle = {
-        "schema": "FYP_GRAVITY_DEMO_MAP_V1",
+        "schema": "FYP_GRAVITY_DEMO_MAP_V2",
         "mode": "GT_FREE_PRESENTATION_EXPORT",
         "candidate": "ekf_gravity_soft_cov_x8",
         "configuration": {
@@ -110,6 +130,8 @@ def run(args: argparse.Namespace) -> None:
             "free": free_counts,
             "soft_x8": soft_counts,
         },
+        "keyframe_ranges": free_ranges,
+        "point_fields": ["x_m", "y_m", "z_m", "keyframe_id"],
         "variants": {
             "free": free_points,
             "soft_x8": soft_points,

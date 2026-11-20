@@ -127,6 +127,13 @@
             <button id="gravityElevation">Elevation</button>
           </div>
         </div>
+        <div class="gravity-replay-controls" aria-label="Gravity map replay controls">
+          <button id="gravityPlay" class="primary">▶ Play reconstruction</button>
+          <button id="gravityReset">Reset</button>
+          <label>Speed <select id="gravitySpeed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select></label>
+          <input id="gravityTimeline" type="range" min="0" max="1000" value="0" aria-label="Gravity reconstruction progress">
+          <span id="gravityReplayLabel">Preparing keyframe replay…</span>
+        </div>
         <div class="gravity-map-grid">
           <article><header><b>Free Pose3</b><span>Current K75 optimization model</span></header><canvas id="gravityFreeMap" width="760" height="440"></canvas></article>
           <article><header><b>Soft Gravity ×8</b><span>5,794 covariance-weighted gravity factors</span></header><canvas id="gravitySoftMap" width="760" height="440"></canvas></article>
@@ -139,7 +146,7 @@
         <article class="guardrail"><small>WHAT DID NOT IMPROVE</small><h3>Local map consistency gate</h3><p id="gravityGuardrail">—</p></article>
         <article class="decision"><small>SYSTEM DECISION</small><h3>Keep Gravity offline-only</h3><p id="gravityDecision">—</p></article>
       </div>
-      <p class="gravity-source">Map points are a GT-free presentation export: every 10th keyframe, every 16th LiDAR point, 1–60 m range, 0.5 m voxelization, then a deterministic display sample. GT is used only for the explicitly labelled ATE card.</p>
+      <p class="gravity-source">Map points are a GT-free presentation export: every 10th keyframe, every 16th LiDAR point, 1–60 m range, 0.5 m voxelization, then a deterministic display sample retaining keyframe ID for synchronized replay. GT is used only for the explicitly labelled ATE card.</p>
     </section>
   </main>
 

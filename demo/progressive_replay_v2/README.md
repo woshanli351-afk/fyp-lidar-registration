@@ -93,6 +93,13 @@ deliberately negative: tilt and joint ATE improve, but the local map p95 rises
 by 9.3 mm and the current Python diagnostic is about 152× slower. Gravity does
 not replace the frozen K75 Batch PGO map or enter the final backend.
 
+The Gravity view now auto-plays a synchronized Free/Soft reconstruction using
+the original keyframe IDs attached to every displayed point. `Play/Pause`,
+`Reset`, the progress slider and `0.5×`–`4×` speed controls operate on the same
+Robot1/Robot3 acquisition progress. Faint points show the final footprint;
+bright points are the keyframes accumulated so far. This is a recorded
+keyframe replay, not a claim that the browser runs the optimizer online.
+
 Use the **Satellite / LiDAR** control in System view to switch between the
 dual-GNSS geographic reference and the frozen batch LiDAR snapshots.
 

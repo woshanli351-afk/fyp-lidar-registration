@@ -64,7 +64,7 @@ def validate_demo() -> dict:
     if not gravity_map_path.is_file() or sha256(gravity_map_path) != gravity["map_export"].get("sha256"):
         raise SystemExit("Demo data failed validation: Gravity map hash mismatch")
     gravity_map = json.loads(gravity_map_path.read_text(encoding="utf-8"))
-    if gravity_map.get("schema") != "FYP_GRAVITY_DEMO_MAP_V1" or gravity_map.get("mode") != "GT_FREE_PRESENTATION_EXPORT":
+    if gravity_map.get("schema") != "FYP_GRAVITY_DEMO_MAP_V2" or gravity_map.get("mode") != "GT_FREE_PRESENTATION_EXPORT":
         raise SystemExit("Demo data failed validation: Gravity map schema changed")
     if set(gravity_map.get("variants", {})) != {"free", "soft_x8"}:
         raise SystemExit("Demo data failed validation: incomplete Gravity map variants")
@@ -72,6 +72,10 @@ def validate_demo() -> dict:
         robots = gravity_map["variants"][variant]
         if set(robots) != {"robot1", "robot3"} or any(not robots[robot] for robot in robots):
             raise SystemExit(f"Demo data failed validation: incomplete Gravity map {variant}")
+        if any(len(point) != 4 for robot in robots for point in robots[robot]):
+            raise SystemExit(f"Demo data failed validation: Gravity map {variant} lacks keyframe IDs")
+    if set(gravity_map.get("keyframe_ranges", {})) != {"robot1", "robot3"}:
+        raise SystemExit("Demo data failed validation: Gravity keyframe ranges missing")
     return bundle
 
 

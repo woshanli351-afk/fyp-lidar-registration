@@ -140,6 +140,8 @@ python scripts/serve_progressive_demo.py
 - `Fullscreen`：全屏；
 - K1/K10/K75：查看对应冻结地图快照。
 - `Gravity diagnostics`：进入独立诊断页；`BEV / Elevation` 切换同尺度地图投影。
+- Gravity 页 `Play/Pause`、`Reset`、进度条和 `0.5×`–`4×` 速度：按真实
+  Robot1/Robot3 keyframe ID 同步累积 Free/Soft 展示点云；不是浏览器在线求解。
 
 Demo 由本机 HTTP 服务提供。`127.0.0.1` 只能被运行服务的电脑访问；其他人可克隆仓库后本地启动。若要公开访问，应另行部署静态文件或通过受控网络入口转发，不能公开服务器凭据。
 
