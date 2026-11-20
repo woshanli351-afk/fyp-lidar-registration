@@ -10,6 +10,8 @@
   keyframe replay，不是实时传感、在线 GTSAM 或 Gravity 已进入最终后端。
 - 地图 schema 升级为 V2，启动器强制验证每个点的 keyframe ID 与机器人范围；
   采样逻辑测试增加点云/标签同步索引检查。
+- Demo 清单和 Gravity 地图请求禁用陈旧缓存，并用地图 SHA-256 前缀版本化
+  JSON URL，避免浏览器混用 V2 页面脚本与旧 V1 地图数据。
 
 ## 2026-11-19 — Gravity 真实地图诊断页
 

@@ -11,7 +11,7 @@ let D=null,G=null,gravityLoad=null,gravityLastDraw=0,S={p:0,playing:false,speed:
 const $=q=>document.querySelector(q),$$=q=>[...document.querySelectorAll(q)];
 const tileCache=new Map();
 
-fetch('data/demo.json').then(r=>{if(!r.ok)throw new Error(`data/demo.json ${r.status}`);return r.json()}).then(data=>{D=data;const params=new URLSearchParams(location.search),preview=Number(params.get('p')),view=params.get('view');if(Number.isFinite(preview))S.p=Math.max(0,Math.min(1,preview));if(['analysis','gravity'].includes(view))S.view=view;if(params.get('map')==='lidar'||!D.geospatial)S.mapMode='lidar';bind();render();if(S.view==='gravity')loadGravityMap().then(()=>startGravityReplay());requestAnimationFrame(tick)}).catch(error=>{$('#sceneTitle').textContent='Demo data failed to load';console.error(error)});
+fetch('data/demo.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(`data/demo.json ${r.status}`);return r.json()}).then(data=>{D=data;const params=new URLSearchParams(location.search),preview=Number(params.get('p')),view=params.get('view');if(Number.isFinite(preview))S.p=Math.max(0,Math.min(1,preview));if(['analysis','gravity'].includes(view))S.view=view;if(params.get('map')==='lidar'||!D.geospatial)S.mapMode='lidar';bind();render();if(S.view==='gravity')loadGravityMap().then(()=>startGravityReplay());requestAnimationFrame(tick)}).catch(error=>{$('#sceneTitle').textContent='Demo data failed to load';console.error(error)});
 
 function bind(){
   updateViewClasses();
@@ -252,8 +252,8 @@ function renderEfficiency(){if(!D)return;const direction=$('#efficiencyDirection
 
 function loadGravityMap(){
   if(G||gravityLoad||!D?.gravity_diagnostic)return gravityLoad;
-  const file=D.gravity_diagnostic.map_export.file;
-  gravityLoad=fetch(file).then(response=>{
+  const asset=D.gravity_diagnostic.map_export,file=asset.file,version=asset.sha256.slice(0,16),url=`${file}?v=${version}`;
+  gravityLoad=fetch(url,{cache:'no-store'}).then(response=>{
     if(!response.ok)throw new Error(`${file} ${response.status}`);
     return response.json();
   }).then(data=>{
