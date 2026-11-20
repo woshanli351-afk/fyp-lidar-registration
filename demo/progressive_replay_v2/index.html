@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>CU-Multi Progressive Mapping Replay</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%2306101d'/%3E%3Cpath d='M9 32h46M32 9v46' stroke='%233ee6a8' stroke-width='6'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="styles.css?v=4">
+  <link rel="stylesheet" href="styles.css?v=5">
 </head>
 <body>
   <header class="topbar">
@@ -107,7 +107,7 @@
         <div>
           <p class="eyebrow">OFFLINE DIAGNOSTIC · FROZEN ROBOT1 + ROBOT3 GRAPH</p>
           <h1 id="gravityTitle">Does Soft Gravity improve the map?</h1>
-          <p class="gravity-lead">A real Free Pose3 versus Soft Gravity ×8 replay using the same 5,796 nodes and 75 accepted inter-robot loops.</p>
+          <p class="gravity-lead">A real Free Pose3 versus Soft Gravity ×8 replay using the same 5,796 nodes and 75 accepted inter-robot loops. The main correction is vertical orientation, so a bird's-eye map alone is expected to look almost unchanged.</p>
         </div>
         <span class="gravity-status">NOT IN FINAL BACK END</span>
       </div>
@@ -119,12 +119,22 @@
         <article><small>Current solver runtime</small><b><span id="gravityTimeFree">—</span><i>→</i><span id="gravityTimeSoft" class="negative">—</span></b><p id="gravityTimeChange">—</p></article>
       </div>
 
+      <section class="gravity-tilt-panel">
+        <div class="panel-head compact">
+          <div><p class="eyebrow">WHY THE BEV LOOKED UNCHANGED</p><h2>Gravity corrects roll/pitch, not the XY route shape</h2></div>
+          <span class="gravity-evidence-tag">FINAL P95 ENDPOINTS</span>
+        </div>
+        <canvas id="gravityTiltGauge" width="1520" height="250" aria-label="Common-up p95 angle comparison"></canvas>
+        <p class="gravity-footnote">The direction gauges are a visual reveal of the exact final p95 values, not an optimizer-time trace. Vector direction is schematic because the reported metric is an angle magnitude.</p>
+      </section>
+
       <section class="gravity-map-panel">
         <div class="panel-head compact">
-          <div><p class="eyebrow">REAL MAP RECONSTRUCTION</p><h2>Same sampling and scale, two frozen trajectories</h2></div>
+          <div><p class="eyebrow">REAL MAP CHECK</p><h2>Same frozen trajectories, with a vertical diagnostic lens</h2></div>
           <div class="gravity-map-switch" aria-label="Gravity map projection">
-            <button id="gravityBev" class="active">BEV · x/y</button>
-            <button id="gravityElevation">Elevation</button>
+            <button id="gravityBev">BEV · x/y</button>
+            <button id="gravityElevation">Elevation 1×</button>
+            <button id="gravityElevationFocus" class="active">Tilt lens · z×6</button>
           </div>
         </div>
         <div class="gravity-replay-controls" aria-label="Gravity map replay controls">
@@ -138,12 +148,12 @@
           <article><header><b>Free Pose3</b><span>Current K75 optimization model</span></header><canvas id="gravityFreeMap" width="760" height="440"></canvas></article>
           <article><header><b>Soft Gravity ×8</b><span>5,794 covariance-weighted gravity factors</span></header><canvas id="gravitySoftMap" width="760" height="440"></canvas></article>
         </div>
-        <p id="gravityProjectionNote" class="gravity-footnote">Bird's-eye view uses identical x/y bounds. Cyan is Robot1; orange is Robot3.</p>
+        <p id="gravityProjectionNote" class="gravity-footnote">Tilt lens uses the same principal travel axis and shared bounds, with z visually exaggerated 6×. Coordinates and evaluation values are unchanged.</p>
       </section>
 
       <div class="gravity-verdict-grid">
         <article class="benefit"><small>WHAT IMPROVED</small><h3>Tilt and global trajectory error</h3><p id="gravityBenefit">—</p></article>
-        <article class="guardrail"><small>WHAT DID NOT IMPROVE</small><h3>Local map consistency gate</h3><p id="gravityGuardrail">—</p></article>
+        <article class="guardrail"><small>WHAT DID NOT IMPROVE</small><h3>Local map consistency gate</h3><p id="gravityGuardrail">—</p><div class="gravity-loop-balance" aria-label="Accepted loops with improved versus worsened local p95"><i id="gravityLoopsBetter"></i><i id="gravityLoopsWorse"></i></div><div class="gravity-loop-labels"><span id="gravityLoopsBetterLabel">—</span><span id="gravityLoopsWorseLabel">—</span></div></article>
         <article class="decision"><small>SYSTEM DECISION</small><h3>Keep Gravity offline-only</h3><p id="gravityDecision">—</p></article>
       </div>
       <p class="gravity-source">Map points are a GT-free presentation export: every 10th keyframe, every 16th LiDAR point, 1–60 m range, 0.5 m voxelization, then a deterministic display sample retaining keyframe ID for synchronized replay. GT is used only for the explicitly labelled ATE card.</p>
@@ -157,6 +167,6 @@
     <span id="timeLabel">00:00 / 01:00</span>
     <p><b>Keys:</b> Space play/pause · 1–6 jump · R reset.<br><b>Claim boundary:</b> frozen offline candidates and batch GTSAM snapshots; no live sensing or validated incremental iSAM2 claim.</p>
   </footer>
-  <script src="app.js?v=4"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>

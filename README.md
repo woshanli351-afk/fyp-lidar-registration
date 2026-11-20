@@ -85,10 +85,12 @@ KITTI CVTNet 使用公开 NCLT checkpoint 做跨数据集迁移；它没有提�
 `demo/progressive_replay_v2/` combines the frozen Stage 11 accuracy/latency
 metrics with the team repository's stable-segment clean batch map snapshots.
 It includes direction-switchable accuracy and efficiency panels plus a six-stage
-Robot1/Robot3 mapping replay. A separate Gravity diagnostics view now compares
-the real Free Pose3 and Soft Gravity ×8 map reconstructions in BEV/elevation,
-with synchronized keyframe-by-keyframe playback, while preserving the negative
-offline-only adoption decision. See the demo
+Robot1/Robot3 mapping replay. A separate Gravity diagnostics view now combines
+an exact common-up angle gauge with real Free Pose3 and Soft Gravity ×8 map
+reconstructions in BEV, metric elevation and a clearly labelled `z×6` vertical
+lens. Synchronized keyframe-by-keyframe playback and the 35/40 local-loop
+balance make both the benefit and the negative offline-only adoption decision
+visible. See the demo
 README for the local launch command and its explicit claim boundaries.
 
 ## 目录

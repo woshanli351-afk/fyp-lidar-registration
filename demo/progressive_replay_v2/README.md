@@ -86,12 +86,16 @@ The **Analysis** view retains the source-backed SC/GICP accuracy, latency and
 registration diagnostics.
 
 The **Gravity diagnostics** view compares the real Free Pose3 and Soft Gravity
-×8 map reconstructions at the same scale. It exposes both BEV and elevation
-projections, separates GT-free selection from explicitly labelled offline GT
-evaluation, and reports the accepted-loop local map gate. The conclusion is
-deliberately negative: tilt and joint ATE improve, but the local map p95 rises
-by 9.3 mm and the current Python diagnostic is about 152× slower. Gravity does
-not replace the frozen K75 Batch PGO map or enter the final backend.
+×8 map reconstructions. A source-backed common-up direction gauge makes the
+12.80° to 0.35° roll/pitch correction visible before the map comparison. The
+map defaults to a clearly labelled `z×6` elevation lens because BEV discards
+the vertical dimension; metric 1:1 elevation and BEV remain selectable. The
+page separates GT-free selection from explicitly labelled offline GT
+evaluation and reports the accepted-loop local map gate as a 35-improved versus
+40-worsened balance. The conclusion is deliberately negative: tilt and joint
+ATE improve, but the local map p95 rises by 9.3 mm and the current Python
+diagnostic is about 152× slower. Gravity does not replace the frozen K75 Batch
+PGO map or enter the final backend.
 
 The Gravity view now auto-plays a synchronized Free/Soft reconstruction using
 the original keyframe IDs attached to every displayed point. `Play/Pause`,

@@ -7,7 +7,7 @@ const STAGES=[
   {p:.58,title:'Progressive batch fusion',note:'Accepted constraints accumulate through stable K10 batch snapshots.',snap:'K10'},
   {p:.90,title:'Final clean map',note:'All 75 frozen clean loop factors produce the final K75 batch result.',snap:'K75'}
 ];
-let D=null,G=null,gravityLoad=null,gravityLastDraw=0,S={p:0,playing:false,speed:1,mapOverride:null,view:'system',mapMode:'satellite',gravityMapMode:'bev',gravityProgress:0,gravityPlaying:false,gravitySpeed:1,gravityStarted:false},last=0;
+let D=null,G=null,gravityLoad=null,gravityLastDraw=0,S={p:0,playing:false,speed:1,mapOverride:null,view:'system',mapMode:'satellite',gravityMapMode:'elevation_focus',gravityProgress:0,gravityPlaying:false,gravitySpeed:1,gravityStarted:false,gravityTiltReveal:0},last=0;
 const $=q=>document.querySelector(q),$$=q=>[...document.querySelectorAll(q)];
 const tileCache=new Map();
 
@@ -37,6 +37,7 @@ function bind(){
   $('#efficiencyDirection').onchange=renderEfficiency;
   $('#gravityBev').onclick=()=>setGravityMapMode('bev');
   $('#gravityElevation').onclick=()=>setGravityMapMode('elevation');
+  $('#gravityElevationFocus').onclick=()=>setGravityMapMode('elevation_focus');
   $('#gravityPlay').onclick=toggleGravityReplay;
   $('#gravityReset').onclick=resetGravityReplay;
   $('#gravitySpeed').onchange=event=>S.gravitySpeed=+event.target.value;
@@ -76,6 +77,7 @@ function setGravityMapMode(mode){
   S.gravityMapMode=mode;
   $('#gravityBev').classList.toggle('active',mode==='bev');
   $('#gravityElevation').classList.toggle('active',mode==='elevation');
+  $('#gravityElevationFocus').classList.toggle('active',mode==='elevation_focus');
   renderGravityMaps();
 }
 
@@ -93,6 +95,10 @@ function tick(time){
     S.gravityProgress=Math.min(1,S.gravityProgress+(time-last)/14000*S.gravitySpeed);
     if(S.gravityProgress===1)S.gravityPlaying=false;
     if(time-gravityLastDraw>=30||S.gravityProgress===1){gravityLastDraw=time;renderGravityMaps()}
+  }
+  if(D&&S.view==='gravity'&&S.gravityTiltReveal<1){
+    S.gravityTiltReveal=Math.min(1,S.gravityTiltReveal+(time-last)/900);
+    renderGravityTiltGauge();
   }
   last=time;requestAnimationFrame(tick);
 }
@@ -282,8 +288,41 @@ function renderGravity(){
   $('#gravityTimeChange').textContent=`${runtime.soft_over_free_ratio.toFixed(0)}× slower in the current Python diagnostic implementation.`;
   $('#gravityBenefit').textContent=`Common-up p95 falls by ${(selection.free_common_up_p95_deg-selection.soft_common_up_p95_deg).toFixed(2)}°, joint ATE falls by ${Math.abs(evaluation.joint_ate_relative_change_percent).toFixed(1)}%, and the better-covered Robot1→Robot3 map p95 falls from ${map.free_directional_p95_m.toFixed(3)} m to ${map.soft_directional_p95_m.toFixed(3)} m.`;
   $('#gravityGuardrail').textContent=`Across the 75 accepted-loop neighbourhoods, pooled p95 rises by ${(map.loop_local_p95_delta_m*1000).toFixed(1)} mm. ${map.loops_with_lower_p95} loops improve and ${map.loops_with_higher_p95} worsen, so the map-level benefit is not consistent.`;
+  const loopTotal=map.loops_with_lower_p95+map.loops_with_higher_p95;
+  $('#gravityLoopsBetter').style.width=`${map.loops_with_lower_p95/loopTotal*100}%`;
+  $('#gravityLoopsWorse').style.width=`${map.loops_with_higher_p95/loopTotal*100}%`;
+  $('#gravityLoopsBetterLabel').textContent=`${map.loops_with_lower_p95} improved`;
+  $('#gravityLoopsWorseLabel').textContent=`${map.loops_with_higher_p95} worsened`;
   $('#gravityDecision').textContent=`${g.decision.summary} The frozen K75 Batch PGO map remains the final Demo output.`;
+  renderGravityTiltGauge();
   renderGravityMaps();
+}
+
+function renderGravityTiltGauge(){
+  if(!D?.gravity_diagnostic)return;
+  const canvas=$('#gravityTiltGauge'),ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height,selection=D.gravity_diagnostic.selection;
+  ctx.fillStyle='#07111e';ctx.fillRect(0,0,w,h);
+  const reveal=1-Math.pow(1-S.gravityTiltReveal,3),panels=[
+    {x:w*.26,label:'FREE POSE3',value:selection.free_common_up_p95_deg,color:COLORS.red,note:'visible roll/pitch disagreement'},
+    {x:w*.74,label:'SOFT GRAVITY ×8',value:selection.soft_common_up_p95_deg,color:COLORS.green,note:'common up-direction restored'}
+  ];
+  ctx.strokeStyle='#173049';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(w/2,22);ctx.lineTo(w/2,h-22);ctx.stroke();
+  for(const panel of panels){
+    const baseY=h-46,length=112,angle=panel.value*Math.PI/180*reveal,tipX=panel.x+Math.sin(angle)*length,tipY=baseY-Math.cos(angle)*length;
+    ctx.fillStyle='#8ca5bb';ctx.font='11px ui-monospace,monospace';ctx.textAlign='center';ctx.fillText(panel.label,panel.x,27);
+    ctx.strokeStyle='#35516b';ctx.setLineDash([6,6]);ctx.beginPath();ctx.moveTo(panel.x,baseY+8);ctx.lineTo(panel.x,baseY-length-12);ctx.stroke();ctx.setLineDash([]);
+    ctx.strokeStyle='#27445e';ctx.beginPath();ctx.moveTo(panel.x-120,baseY);ctx.lineTo(panel.x+120,baseY);ctx.stroke();
+    ctx.strokeStyle=panel.color;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(panel.x,baseY);ctx.lineTo(tipX,tipY);ctx.stroke();
+    ctx.fillStyle=panel.color;ctx.beginPath();ctx.arc(tipX,tipY,7,0,Math.PI*2);ctx.fill();
+    if(angle>.002){ctx.lineWidth=2;ctx.beginPath();ctx.arc(panel.x,baseY,48,-Math.PI/2,-Math.PI/2+angle);ctx.stroke()}
+    ctx.font='700 28px system-ui';ctx.fillText(`${panel.value.toFixed(2)}°`,panel.x+105,76);
+    ctx.fillStyle='#7f99b0';ctx.font='11px system-ui';ctx.fillText(panel.note,panel.x+105,96);
+    ctx.fillStyle='#526e86';ctx.font='10px ui-monospace,monospace';ctx.fillText('DASHED = IDEAL UP',panel.x,baseY+25);
+  }
+  const reduction=(1-selection.soft_common_up_p95_deg/selection.free_common_up_p95_deg)*100;
+  ctx.fillStyle='#0d2131';ctx.fillRect(w/2-100,h/2-25,200,50);ctx.strokeStyle='#2f5c75';ctx.strokeRect(w/2-100,h/2-25,200,50);
+  ctx.fillStyle=COLORS.green;ctx.font='700 18px system-ui';ctx.textAlign='center';ctx.fillText(`${reduction.toFixed(1)}% LOWER`,w/2,h/2+1);
+  ctx.fillStyle='#8ca5bb';ctx.font='9px ui-monospace,monospace';ctx.fillText('COMMON-UP P95',w/2,h/2+17);ctx.textAlign='left';ctx.lineWidth=1;
 }
 
 function drawGravityMessage(message){
@@ -309,11 +348,12 @@ function updateGravityReplayControls(){
 function gravityProjection(){
   const all=[];
   for(const variant of ['free','soft_x8'])for(const robot of ['robot1','robot3'])for(const point of G.variants[variant][robot])all.push(point);
-  if(S.gravityMapMode==='bev')return{label:'Bird\'s-eye view uses identical x/y bounds. Cyan is Robot1; orange is Robot3.',project:p=>[p[0],p[1]]};
-  let mx=0,my=0;for(const p of all){mx+=p[0];my+=p[1]}mx/=all.length;my/=all.length;
+  if(S.gravityMapMode==='bev')return{label:'Bird\'s-eye view hides z and therefore makes a roll/pitch correction difficult to see. Cyan is Robot1; orange is Robot3.',project:p=>[p[0],p[1]]};
+  let mx=0,my=0,mz=0;for(const p of all){mx+=p[0];my+=p[1];mz+=p[2]}mx/=all.length;my/=all.length;mz/=all.length;
   let xx=0,xy=0,yy=0;for(const p of all){const x=p[0]-mx,y=p[1]-my;xx+=x*x;xy+=x*y;yy+=y*y}
   const angle=.5*Math.atan2(2*xy,xx-yy),ax=Math.cos(angle),ay=Math.sin(angle);
-  return{label:'Elevation view projects horizontal position onto the shared principal travel axis and plots z with identical bounds.',project:p=>[(p[0]-mx)*ax+(p[1]-my)*ay,p[2]]};
+  const verticalScale=S.gravityMapMode==='elevation_focus'?6:1;
+  return{label:verticalScale===1?'Elevation view uses metric 1:1 scaling and shared bounds.':'Tilt lens uses the same principal travel axis and shared bounds, with z visually exaggerated 6×. Coordinates and evaluation values are unchanged.',project:p=>[(p[0]-mx)*ax+(p[1]-my)*ay,(p[2]-mz)*verticalScale]};
 }
 
 function gravityPlotPoint(point,bounds,w,h){
@@ -341,7 +381,8 @@ function renderGravityMaps(){
       const [start,end]=G.keyframe_ranges[robot],cutoff=start+(end-start)*S.gravityProgress,source=G.variants[variant][robot];ctx.globalAlpha=.72;
       for(let index=0;index<source.length;index++)if(source[index][3]<=cutoff){const u=gravityPlotPoint(projected[variant][robot][index],bounds,w,h);ctx.fillRect(u[0],u[1],1.75,1.75)}
     }
-    ctx.globalAlpha=1;ctx.fillStyle='#a8bfd3';ctx.font='11px ui-monospace,monospace';ctx.fillText(`${S.gravityMapMode==='bev'?'X / Y':'PRINCIPAL AXIS / Z'} · SAME SCALE`,14,21);ctx.textAlign='right';ctx.fillStyle=COLORS.green;ctx.fillText(`${Math.round(S.gravityProgress*100)}% RECONSTRUCTED`,w-14,21);ctx.textAlign='left';
+    const modeLabel=S.gravityMapMode==='bev'?'X / Y · SHARED BOUNDS':S.gravityMapMode==='elevation'?'PRINCIPAL AXIS / Z · METRIC 1:1':'PRINCIPAL AXIS / Z ×6 · VISUAL LENS';
+    ctx.globalAlpha=1;ctx.fillStyle='#a8bfd3';ctx.font='11px ui-monospace,monospace';ctx.fillText(modeLabel,14,21);ctx.textAlign='right';ctx.fillStyle=COLORS.green;ctx.fillText(`${Math.round(S.gravityProgress*100)}% RECONSTRUCTED`,w-14,21);ctx.textAlign='left';
   }
   $('#gravityProjectionNote').textContent=projection.label;
 }
